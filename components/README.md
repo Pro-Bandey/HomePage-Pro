@@ -7,3 +7,9 @@
 - Searches
 - popups and theme
 - some other elements
+- bookmarker
+- linker
+- todo
+- gamer
+- calculator
+- and some more repect to time
