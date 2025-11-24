@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3-Mode Theme Toggle</title>
+
+<style>
+:root {
+  --text: #000;
+  --bg: #fff;
+}
+
+html.dark {
+  --text: #fff;
+  --bg: #222;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: sans-serif;
+  padding: 20px;
+  transition: background .3s, color .3s;
+}
+
+/* Toggle Button Style */
+#themeToggleBtn {
+  width: 55px;
+  height: 55px;
+  border-radius: 14px;
+  border: none;
+  background: #0003;
+  backdrop-filter: blur(8px);
+  font-size: 26px;
+  cursor: pointer;
+  transition: .25s;
+}
+
+#themeToggleBtn:hover {
+  background: #0004;
+}
+</style>
+</head>
+
+<body>
+
+<h2>3-Mode Theme Toggle Button</h2>
+<button id="themeToggleBtn">⚙️</button>
+
+<div class="box">
+  <p>This toggle cycles: Light → Dark → System → Light…</p>
+</div>
+
+<script>
+/* ===========================================================
+   THEME ENGINE (Light / Dark / System) USING BUTTON CYCLE
+=========================================================== */
+
+const btn = document.getElementById("themeToggleBtn");
+const systemPref = window.matchMedia("(prefers-color-scheme: dark)");
+
+/* Apply theme */
+function applyTheme(mode) {
+    if (mode === "light") {
+        document.documentElement.classList.remove("dark");
+        btn.textContent = "🌞";
+    }
+    else if (mode === "dark") {
+        document.documentElement.classList.add("dark");
+        btn.textContent = "🌙";
+    }
+    else if (mode === "system") {
+        if (systemPref.matches) {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+        btn.textContent = "⚙️";
+    }
+}
+
+/* Load saved mode OR default to system */
+let themeMode = localStorage.getItem("theme-mode") || "system";
+applyTheme(themeMode);
+
+/* Button cycles Light → Dark → System → repeat */
+btn.addEventListener("click", () => {
+    if (themeMode === "light") themeMode = "dark";
+    else if (themeMode === "dark") themeMode = "system";
+    else themeMode = "light";
+
+    localStorage.setItem("theme-mode", themeMode);
+    applyTheme(themeMode);
+});
+
+/* Auto-follow device theme when in System mode */
+systemPref.addEventListener("change", () => {
+    if (themeMode === "system") {
+        applyTheme("system");
+    }
+});
+</script>
+
+</body>
+</html>

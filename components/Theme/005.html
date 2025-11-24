@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3 Theme Mode Demo</title>
+
+<style>
+:root {
+  --text: #000;
+  --bg: #fff;
+}
+
+html.dark {
+  --text: #fff;
+  --bg: #222;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: sans-serif;
+  padding: 20px;
+  transition: background .3s, color .3s;
+}
+
+.box {
+  padding: 20px;
+  border-radius: 10px;
+  background: #0002;
+  backdrop-filter: blur(10px);
+  margin-top: 30px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Theme Selection (Light / Dark / System)</h2>
+
+<select id="themeSelector">
+  <option value="system">System Default</option>
+  <option value="light">Light</option>
+  <option value="dark">Dark</option>
+</select>
+
+<div class="box">
+  <p>This page uses a 3-theme selector with full persistence.</p>
+</div>
+
+<script>
+/* ===========================================================
+   THEME HANDLER (Light / Dark / System)
+=========================================================== */
+
+const selector = document.getElementById("themeSelector");
+const systemPref = window.matchMedia("(prefers-color-scheme: dark)");
+
+/* Apply a theme */
+function applyTheme(mode) {
+    if (mode === "light") {
+        document.documentElement.classList.remove("dark");
+    }
+    else if (mode === "dark") {
+        document.documentElement.classList.add("dark");
+    }
+    else if (mode === "system") {
+        if (systemPref.matches) {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+    }
+}
+
+/* Load saved theme */
+let savedMode = localStorage.getItem("theme-mode") || "system";
+selector.value = savedMode;
+applyTheme(savedMode);
+
+/* Listen to system theme changes (only when in System mode) */
+systemPref.addEventListener("change", () => {
+    if (selector.value === "system") {
+        applyTheme("system");
+    }
+});
+
+/* User changes theme manually */
+selector.addEventListener("change", () => {
+    let mode = selector.value;
+    localStorage.setItem("theme-mode", mode);
+    applyTheme(mode);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Professional Custom Clock</title>
+<style>
+:root {
+  --clock-bg: rgba(0,0,0,0.8);
+  --clock-color: #ffffff;
+  --clock-font: 'Arial', sans-serif;
+  --clock-size: 250px;
+  --border-radius: 50%;
+  --hand-hour-color: #fff;
+  --hand-minute-color: #fff;
+  --hand-second-color: #ff0000;
+  --hand-hour-width: 6px;
+  --hand-minute-width: 4px;
+  --hand-second-width: 2px;
+  --shadow-color: rgba(0,0,0,0.5);
+  --digital-style: 1; /* 1=rounded, 2=rectangle, 3=glass */
+  --hand-shape: 1; /* 1=stick, 2=arrow, 3=tapered, 4=circle tip */
+}
+
+body {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  min-height:100vh;
+  margin:0;
+  font-family: var(--clock-font);
+  background-color:#487453;
+  color: var(--clock-color);
+  padding: 20px;
+}
+
+h1 { margin-bottom:10px; }
+
+button{ cursor:pointer; margin:5px 0;}
+
+#digitalClock {
+  font-size: calc(var(--clock-size)/5);
+  background: var(--clock-bg);
+  padding:20px;
+  border-radius:100px;
+  margin-bottom:20px;
+  box-shadow:0 0 15px var(--shadow-color);
+  text-align:center;
+  transition: all 0.3s;
+}
+
+/* Digital Styles */
+.digital-style-1 { border-radius: 50px; }
+.digital-style-2 { border-radius: 5px; }
+.digital-style-3 { border-radius:20px; backdrop-filter: blur(8px); border:1px solid rgba(255,255,255,0.2); }
+
+/* Analog Clock */
+#analogClock {
+  width: var(--clock-size);
+  height: var(--clock-size);
+  border: 8px solid var(--clock-color);
+  border-radius: var(--border-radius);
+  position: relative;
+  background: var(--clock-bg);
+  margin-bottom:20px;
+  box-shadow: 0 0 20px var(--shadow-color);
+  transition: all 0.3s;
+}
+
+.hand {
+  position:absolute;
+  width:50%;
+  top:50%;
+  left:50%;
+  transform-origin:0% 50%;
+  border-radius:2px;
+  background: var(--hand-minute-color);
+}
+
+.hour { height: var(--hand-hour-width); background: var(--clock-bg);filter: invert(1);}
+.minute{ height: var(--hand-minute-width); background: var(--clock-bg);filter: invert(1);}
+.second{ height: var(--hand-second-width); background: red}
+
+/* Hand shapes */
+.hand.shape-arrow::after{
+  content:'>';
+  font-size: 30px;
+  position:absolute;
+  right:-5px;
+  bottom:50%;
+  background: transparent;
+  transform: translatey(50%);
+}
+.hand.shape-tapered { border-radius: 0 50% 50% 0; }
+.hand.shape-circle-tip::after{
+  content:'';
+  position:absolute;
+  right:0px;
+  bottom:50%;
+  transform: translatey(50%);
+  width:8px; height:8px;
+  border-radius:50%;
+  background:inherit;
+}
+.mid{
+  position: absolute;
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  top:50%;
+  left:50%;
+  transform-origin:0% -50%);
+}
+.mid.main .main{
+  position: absolute;
+  background:var(--hand-second-color);
+  border-radius: 0;
+  width:30px;
+  height: 30px;
+  animation: Radius1 10s infinite;
+}
+@keyframes Radius1 {
+  0%{border-radius:0%;}
+  25%{border-radius:0%;background:var(--hand-second-color);}
+  50%{border-radius:50%;background:var(--hand-minute-color);}
+  75%{border-radius:50%;background:var(--hand-hour-color);}
+  100%{border-radius:0%;}
+}
+.mid.main .main.main1{rotate: 10deg;}
+.mid.main .main.main2{rotate: 20deg;}
+.mid.main .main.main3{rotate: 30deg;}
+.mid.main .main.main4{rotate: 40deg;}
+.mid.main .main.main5{rotate: 50deg;}
+.mid.main .main.main6{rotate: 60deg;}
+.mid.main .main.main7{rotate: 70deg;}
+.mid.main .main.main8{rotate: 80deg;}
+#settings{ margin-top:20px; padding:20px; background:#222; border-radius:15px; width:400px;}
+#settings label{ display:block; margin:5px 0;}
+input[type=color], input[type=number], select, input[type=text]{ width:100%; margin-top:3px;}
+#importFile{display:none;}
+#styleGallery{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px;}
+.styleCard{width:50px; height:50px; border-radius:50%; cursor:pointer; border:2px solid #fff; box-shadow:0 0 5px #000;}
+</style>
+</head>
+<body>
+
+<h1>Professional Custom Clock</h1>
+
+<div id="digitalClock" class="digital-style-1"></div>
+<div id="analogClock" style="display:none;">
+  <div class="hand hour" id="hourHand"></div>
+  <div class="hand minute" id="minuteHand"></div>
+  <div class="hand second" id="secondHand"></div>
+  <div class="mid main" id="midmain">
+    <div class="main main0"></div>
+    <div class="main main1"></div>
+    <div class="main main2"></div>
+    <div class="main main3"></div>
+    <div class="main main4"></div>
+    <div class="main main5"></div>
+    <div class="main main6"></div>
+    <div class="main main7"></div>
+    <div class="main main8"></div>
+    
+  </div>
+</div>
+
+<h3>Built-in Styles</h3>
+<div id="styleGallery"></div>
+
+<div id="settings">
+<h3>Clock Settings</h3>
+<button id="clockSwitcher">Switch Clock</button>
+<label><input type="checkbox" id="showAmPm" checked> Show AM/PM</label>
+<label><input type="checkbox" id="showDate" checked> Show Date</label>
+<label><input type="checkbox" id="showDay" checked> Show Day</label>
+
+<label>Time Format:
+<select id="timeFormat">
+<option value="24">24-Hour</option>
+<option value="12" selected>12-Hour</option>
+</select>
+</label>
+
+<label>Time Zone:
+<select id="timeZone">
+<option value="local">Local</option>
+<option value="UTC">UTC</option>
+<option value="GMT">GMT</option>
+<option value="America/New_York">New York</option>
+<option value="Europe/London">London</option>
+<option value="Asia/Karachi">Karachi</option>
+</select>
+</label>
+
+<label>Digital Style:
+<select id="digitalStyle">
+<option value="1">Rounded</option>
+<option value="2">Rectangle</option>
+<option value="3">Glass</option>
+</select>
+</label>
+
+<label>Clock Color: <input type="color" id="clockColor" value="#ffffff"></label>
+<label>Clock Background: <input type="color" id="clockBg" value="#000000"></label>
+<label>Clock Size (px): <input type="number" id="clockSize" value="250"></label>
+<label>Border Radius: <input type="text" id="borderRadius" value="50%"></label>
+<label>Font Family: <input type="text" id="clockFont" value="Arial, sans-serif"></label>
+
+<label>Hour Hand Color: <input type="color" id="handHourColor" value="#ffffff"></label>
+<label>Minute Hand Color: <input type="color" id="handMinuteColor" value="#ffffff"></label>
+<label>Second Hand Color: <input type="color" id="handSecondColor" value="red"></label>
+
+<label>Hand Shape:
+<select id="handShape">
+<option value="1">Stick</option>
+<option value="2">Arrow</option>
+<option value="3">Tapered</option>
+<option value="4">Circle Tip</option>
+</select>
+</label>
+
+<label>Shadow Color: <input type="color" id="shadowColor" value="rgba(0,0,0,0.5)"></label>
+
+<button id="exportSettings">Export Settings</button>
+<button id="importSettings">Import Settings</button>
+<input type="file" id="importFile">
+</div>
+
+<script>
+const digitalClock=document.getElementById('digitalClock');
+const analogClock=document.getElementById('analogClock');
+const hourHand=document.getElementById('hourHand');
+const minuteHand=document.getElementById('minuteHand');
+const secondHand=document.getElementById('secondHand');
+const midmain=document.getElementById('midmain');
+const clockSwitcher=document.getElementById('clockSwitcher');
+let showDigital=true;
+clockSwitcher.addEventListener('click',()=>{showDigital=!showDigital;digitalClock.style.display=showDigital?'block':'none';analogClock.style.display=showDigital?'none':'block';});
+
+const showAmPm=document.getElementById('showAmPm');
+const showDate=document.getElementById('showDate');
+const showDay=document.getElementById('showDay');
+const timeFormat=document.getElementById('timeFormat');
+const timeZone=document.getElementById('timeZone');
+const digitalStyle=document.getElementById('digitalStyle');
+const clockColor=document.getElementById('clockColor');
+const clockBg=document.getElementById('clockBg');
+const clockSize=document.getElementById('clockSize');
+const borderRadius=document.getElementById('borderRadius');
+const clockFont=document.getElementById('clockFont');
+const handHourColor=document.getElementById('handHourColor');
+const handMinuteColor=document.getElementById('handMinuteColor');
+const handSecondColor=document.getElementById('handSecondColor');
+const shadowColor=document.getElementById('shadowColor');
+const handShape=document.getElementById('handShape');
+const exportSettingsBtn=document.getElementById('exportSettings');
+const importSettingsBtn=document.getElementById('importSettings');
+const importFile=document.getElementById('importFile');
+
+const builtInStyles=[
+{bg:'#000000',color:'#ffffff',shadow:'rgba(0,0,0,0.5)'},
+{bg:'#ffffff',color:'#000000',shadow:'rgba(0,0,0,0.2)'},
+{bg:'#1a1a2e',color:'#e94560',shadow:'rgba(0,0,0,0.5)'},
+{bg:'#0f3460',color:'#e94560',shadow:'rgba(0,0,0,0.7)'},
+{bg:'#162447',color:'#1f4068',shadow:'rgba(0,0,0,0.5)'},
+];
+
+const styleGallery=document.getElementById('styleGallery');
+builtInStyles.forEach((style,i)=>{
+  const card=document.createElement('div');
+  card.className='styleCard';
+  card.style.background=style.bg;
+  card.style.borderColor=style.color;
+  card.title=`Style ${i+1}`;
+  card.addEventListener('click',()=>{
+    clockBg.value=style.bg; clockColor.value=style.color; shadowColor.value=style.shadow;
+    applySettings();
+  });
+  styleGallery.appendChild(card);
+});
+
+function getNowTime(){
+  const tz=timeZone.value;
+  let now;
+  if(tz==='local') now=new Date();
+  else now=new Date(new Date().toLocaleString("en-US",{timeZone:tz}));
+  return now;
+}
+
+function updateClock(){
+  const now=getNowTime();
+  let hours=now.getHours(),minutes=now.getMinutes(),seconds=now.getSeconds();
+  let ampm=hours>=12?'PM':'AM';
+  if(timeFormat.value==='12') hours=hours%12||12;
+  const pad=n=>n.toString().padStart(2,'0');
+  let timeStr=`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  if(showAmPm.checked) timeStr+=` ${ampm}`;
+  if(showDate.checked) timeStr+=`  ${now.toLocaleDateString()}`;
+  if(showDay.checked) timeStr+=`  ${now.toLocaleDateString('en-US',{weekday:'long'})}`;
+  digitalClock.textContent=timeStr;
+
+  const hourDeg=(now.getHours()%12+minutes/60)*30;
+  const minuteDeg=(minutes+seconds/60)*6;
+  const secondDeg=seconds*6;
+  hourHand.style.transform=`rotate(${hourDeg}deg)`;
+  minuteHand.style.transform=`rotate(${minuteDeg}deg)`;
+  secondHand.style.transform=`rotate(${secondDeg}deg)`;
+  midmain.style.transform=`rotate(${secondDeg}deg)`;
+
+  // hand shapes
+  const shapes=['','shape-arrow','shape-tapered','shape-circle-tip'];
+  hourHand.className=`hand hour ${shapes[handShape.value-1]}`;
+  minuteHand.className=`hand minute ${shapes[handShape.value-1]}`;
+  secondHand.className=`hand second ${shapes[handShape.value-1]}`;
+
+  // digital styles
+  digitalClock.className=`digital-style-${digitalStyle.value}`;
+
+  requestAnimationFrame(updateClock);
+}
+updateClock();
+
+function applySettings(){
+  document.documentElement.style.setProperty('--clock-color',clockColor.value);
+  document.documentElement.style.setProperty('--clock-bg',clockBg.value);
+  document.documentElement.style.setProperty('--clock-size',`${clockSize.value}px`);
+  document.documentElement.style.setProperty('--border-radius',borderRadius.value);
+  document.documentElement.style.setProperty('--clock-font',clockFont.value);
+  document.documentElement.style.setProperty('--hand-hour-color',handHourColor.value);
+  document.documentElement.style.setProperty('--hand-minute-color',handMinuteColor.value);
+  document.documentElement.style.setProperty('--hand-second-color',handSecondColor.value);
+  document.documentElement.style.setProperty('--shadow-color',shadowColor.value);
+}
+[clockColor,clockBg,clockSize,borderRadius,clockFont,handHourColor,handMinuteColor,handSecondColor,shadowColor,digitalStyle,handShape].forEach(el=>el.addEventListener('input',applySettings));
+[showAmPm,showDate,showDay,timeFormat,timeZone].forEach(el=>el.addEventListener('change',updateClock));
+
+exportSettingsBtn.addEventListener('click',()=>{
+  const settings={showAmPm:showAmPm.checked,showDate:showDate.checked,showDay:showDay.checked,timeFormat:timeFormat.value,timeZone:timeZone.value,clockColor:clockColor.value,clockBg:clockBg.value,clockSize:clockSize.value,borderRadius:borderRadius.value,clockFont:clockFont.value,handHourColor:handHourColor.value,handMinuteColor:handMinuteColor.value,handSecondColor:handSecondColor.value,shadowColor:shadowColor.value,digitalStyle:digitalStyle.value,handShape:handShape.value};
+  const blob=new Blob([JSON.stringify(settings)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='clock-settings.json'; a.click(); URL.revokeObjectURL(url);
+});
+
+importSettingsBtn.addEventListener('click',()=>importFile.click());
+importFile.addEventListener('change',e=>{
+  const file=e.target.files[0];
+  const reader=new FileReader();
+  reader.onload=function(){
+    const settings=JSON.parse(reader.result);
+    showAmPm.checked=settings.showAmPm;
+    showDate.checked=settings.showDate;
+    showDay.checked=settings.showDay;
+    timeFormat.value=settings.timeFormat;
+    timeZone.value=settings.timeZone;
+    clockColor.value=settings.clockColor;
+    clockBg.value=settings.clockBg;
+    clockSize.value=settings.clockSize;
+    borderRadius.value=settings.borderRadius;
+    clockFont.value=settings.clockFont;
+    handHourColor.value=settings.handHourColor;
+    handMinuteColor.value=settings.handMinuteColor;
+    handSecondColor.value=settings.handSecondColor;
+    shadowColor.value=settings.shadowColor;
+    digitalStyle.value=settings.digitalStyle;
+    handShape.value=settings.handShape;
+    applySettings();
+    updateClock();
+  }
+  reader.readAsText(file);
+});
+applySettings();
+</script>
+</body>
+</html>

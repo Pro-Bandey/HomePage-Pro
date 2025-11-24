@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Button & Toggle Mega Collection</title>
+
+<style>
+/* ------------------------------
+ GLOBAL STYLES
+-------------------------------*/
+body {
+    background: #050505;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 40px;
+}
+
+h1 { margin-bottom: 30px; }
+h2 { margin-top: 60px; }
+
+/* Container */
+.btn-container, .toggle-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    margin-top: 20px;
+}
+
+button {
+    padding: 16px 40px;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ------------------------------------
+ ORIGINAL BUTTON SET
+------------------------------------- */
+.btn-glow { background:#111; border:2px solid #0ff; color:#0ff; box-shadow:0 0 15px #0ff; }
+.btn-glow:hover { box-shadow:0 0 40px #0ff; }
+
+.btn-slide { background:transparent; color:#ff008c; border:2px solid #ff008c; }
+.btn-slide::before {
+    content:""; position:absolute; width:0; height:100%; left:0; top:0; background:#ff008c;
+    transition:.4s; z-index:-1;
+}
+.btn-slide:hover::before { width:100%; }
+
+.btn-ripple { background:#222; color:white; }
+.ripple-effect {
+    position:absolute; width:20px; height:20px; background:rgba(255,255,255,.3);
+    border-radius:50%; transform:scale(0); animation:ripple .6s linear;
+}
+@keyframes ripple { to { transform:scale(4); opacity:0; } }
+
+.btn-3d { background:#28a745; color:#fff; box-shadow:0 6px #1f7a33; }
+.btn-3d:active { transform:translateY(4px); box-shadow:0 2px #1f7a33; }
+
+.btn-border { background:transparent; color:#00d9ff; }
+.btn-border::before,.btn-border::after {
+    content:""; position:absolute; width:0; height:2px; background:#00d9ff; transition:.3s;
+}
+.btn-border::before { top:0; left:0; }
+.btn-border::after { bottom:0; right:0; }
+.btn-border:hover::before,.btn-border:hover::after { width:100%; }
+
+.btn-gradient {
+    color:#fff; background:linear-gradient(45deg,#ff00c8,#6200ff,#00eaff);
+    background-size:300%; animation:grad 4s infinite linear;
+}
+@keyframes grad { 0%{background-position:0;} 50%{background-position:100%;} 100%{background-position:0;} }
+
+.btn-neon { color:#0f0; background:#111; border:2px solid #0f0; animation:neon 1.3s infinite alternate; }
+@keyframes neon { from{box-shadow:0 0 10px #0f0;} to{box-shadow:0 0 30px #0f0;} }
+
+.btn-liquid {
+    background:linear-gradient(45deg,#00ccff,#00ffaa); color:#fff;
+}
+.btn-liquid::after {
+    content:""; position:absolute; width:130%; height:130%;
+    background:rgba(255,255,255,.2); top:-40px; left:-40px;
+    border-radius:50%; animation:liq 3s infinite linear;
+}
+@keyframes liq { 50%{transform:translate(40px,40px);} }
+
+.btn-magnetic:hover { transform:scale(1.1); background:#292929; }
+
+/* ------------------------------
+ NEW BUTTON EFFECTS
+-------------------------------*/
+
+/* Glass button */
+.btn-glass {
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.25);
+    backdrop-filter: blur(10px);
+    border-radius:12px;
+}
+
+/* Fire button */
+.btn-fire {
+    background:linear-gradient(45deg,#ff2a00,#ff8c00);
+    animation:fire 1.5s infinite alternate;
+}
+@keyframes fire { 0%{box-shadow:0 0 10px #ff3000;} 100%{box-shadow:0 0 35px #ff8c00;} }
+
+/* Water Wave */
+.btn-water {
+    background:#0077ff; border:2px solid #77c7ff;
+    overflow:hidden; color:white;
+}
+.btn-water::after {
+    content:""; position:absolute; width:200%; height:200%;
+    top:120%; left:-50%; background:rgba(255,255,255,0.2); border-radius:45%;
+    animation:wave 4s infinite ease-in-out;
+}
+@keyframes wave {
+    0%{top:120%;} 100%{top:-160%;}
+}
+
+/* Ice crack button */
+.btn-ice {
+    background:#99e0ff;
+    color:#003b57;
+    border:2px solid #c4f2ff;
+    box-shadow: inset 0 0 20px #e5f8ff;
+}
+
+/* Electric Sparks */
+.btn-electric {
+    background:black; color:#00eaff; border:2px solid #00eaff;
+}
+.btn-electric:hover {
+    box-shadow:0 0 20px #0ff,0 0 40px #00eaff;
+}
+
+/* RGB Glitch / Hologram */
+.btn-glitch {
+    background:black; color:white;
+    text-shadow: -2px 0 red, 2px 0 cyan;
+    animation:glitch 0.7s infinite linear alternate;
+}
+@keyframes glitch {
+    0% { text-shadow:-2px 0 red, 2px 0 cyan; }
+    100% { text-shadow:-3px 0 cyan, 3px 0 red; }
+}
+
+/* Smoke Hover */
+.btn-smoke {
+    background:#202020;
+    color:white;
+}
+.btn-smoke:hover::after {
+    content:""; position:absolute; width:120%; height:120%;
+    background:url('https://i.imgur.com/8KcF7E7.png');
+    background-size:cover; top:-20%; left:-10%;
+    opacity:0.4; animation:smoke 2s linear infinite;
+}
+@keyframes smoke { 100%{opacity:0;} }
+
+/* Round expand */
+.btn-expand:hover { transform:scale(1.1); border-radius:50px; }
+
+/* Morph blob */
+.btn-blob {
+    background:#ff009d; color:white;
+    animation:blobAnim 6s infinite ease-in-out;
+}
+@keyframes blobAnim {
+    50% { border-radius:60% 40% 70% 30%; }
+}
+
+/* 3D Rotate */
+.btn-rotate:hover {
+    transform: rotateX(25deg) rotateY(20deg);
+}
+
+/* Anime energy */
+.btn-anime {
+    background:#6100ff; color:white;
+}
+.btn-anime:hover {
+    box-shadow:0 0 20px #b44fff,0 0 40px #5a00ff, inset 0 0 20px #fff;
+}
+
+/* Cyberpunk */
+.btn-cyber {
+    background:#040404; color:#00ffff;
+    border:2px solid #00ffff;
+    text-shadow:0 0 10px #00ffff;
+}
+
+/* -----------------------------
+  NEW TOGGLE COLLECTION
+------------------------------ */
+
+/* Base toggle style */
+.tgl {
+    width:70px; height:34px;
+    background:#555; border-radius:20px;
+    position:relative; cursor:pointer;
+    transition:.3s;
+}
+.tgl .knob {
+    width:28px; height:28px;
+    background:white; border-radius:50%;
+    position:absolute; top:3px; left:3px; transition:.3s;
+}
+
+/* ON STATE */
+.tgl.active { background:#00d94e; }
+.tgl.active .knob { transform:translateX(34px); }
+
+/* Square toggle */
+.tgl-square { border-radius:4px; }
+.tgl-square .knob { border-radius:4px; }
+
+/* Neon toggle */
+.tgl-neon { background:#222; box-shadow:0 0 10px #0ff inset; }
+.tgl-neon.active { background:#0ff; box-shadow:0 0 20px #0ff; }
+
+/* Glass toggle */
+.tgl-glass {
+    background:rgba(255,255,255,0.2);
+    border:1px solid rgba(255,255,255,0.4);
+    backdrop-filter:blur(10px);
+}
+.tgl-glass .knob { background:rgba(255,255,255,0.8); }
+
+/* Cyberpunk toggle */
+.tgl-cyber { background:#111; border:2px solid #0ff; }
+.tgl-cyber.active { background:#0ff; box-shadow:0 0 15px #0ff; }
+
+/* Emoji toggle */
+.tgl-emoji .knob::before {
+    content:"😴"; position:absolute; inset:0;
+    display:flex; justify-content:center; align-items:center;
+    font-size:18px;
+}
+.tgl-emoji.active .knob::before { content:"😎"; }
+
+/* Rotate toggle */
+.tgl-rotate .knob { transition:.6s; }
+.tgl-rotate.active .knob { transform:translateX(34px) rotate(360deg); }
+
+/* Pulse toggle */
+.tgl-pulse.active { animation:pulse 1s infinite; }
+@keyframes pulse { 0% { box-shadow:0 0 0px #0f0; } 100% { box-shadow:0 0 20px #0f0; } }
+
+/* Glow toggle */
+.tgl-glow.active { box-shadow:0 0 20px #ff00d9; background:#ff00d9; }
+
+/* Slide-up toggle */
+.tgl-up .knob { top:20px; }
+.tgl-up.active .knob { top:3px; transform:translateX(34px); }
+
+</style>
+</head>
+
+<body>
+
+<h1>Complete Button + Toggle Animation Collection</h1>
+
+<!-- BUTTONS -->
+<h2>Buttons</h2>
+<div class="btn-container">
+
+<button class="btn-glow">Glow</button>
+<button class="btn-slide">Slide Fill</button>
+<button class="btn-ripple">Ripple</button>
+<button class="btn-3d">3D Press</button>
+<button class="btn-border">Border Draw</button>
+<button class="btn-gradient">Gradient</button>
+<button class="btn-neon">Neon</button>
+<button class="btn-liquid">Liquid</button>
+<button class="btn-magnetic">Magnetic</button>
+
+<!-- NEW -->
+<button class="btn-glass">Glass</button>
+<button class="btn-fire">Fire</button>
+<button class="btn-water">Water</button>
+<button class="btn-ice">Ice</button>
+<button class="btn-electric">Electric</button>
+<button class="btn-glitch">Glitch</button>
+<button class="btn-smoke">Smoke</button>
+<button class="btn-expand">Expand</button>
+<button class="btn-blob">Blob</button>
+<button class="btn-rotate">Rotate</button>
+<button class="btn-anime">Anime Energy</button>
+<button class="btn-cyber">Cyberpunk</button>
+
+</div>
+
+<!-- TOGGLES -->
+<h2>Toggles</h2>
+<div class="toggle-container">
+
+<div class="tgl" onclick="this.classList.toggle('active')"><div class="knob"></div></div>
+
+<div class="tgl tgl-square" onclick="this.classList.toggle('active')"><div class="knob"></div></div>
+
+<div class="tgl tgl-neon" onclick="this.classList.toggle('active')"><div class="knob"></div></div>
+
+<div class="tgl tgl-glass" onclick="this.classList.toggle('active')"><div class="knob"></div></div>
+
+<div class="tgl tgl-cyber" onclick="this.classList.toggle('active')"><div class="knob"></div></div>
+
+<div class="tgl tgl-emoji" onclick="this.classList.toggle('active')"><div class="knob"></div></div>
+
+<div class="tgl tgl-rotate" onclick="this.classList.toggle('active')"><div class="knob"></div></div>
+
+<div class="tgl tgl-pulse" onclick="this.classList.toggle('active')"><div class="knob"></div></div>
+
+<div class="tgl tgl-glow" onclick="this.classList.toggle('active')"><div class="knob"></div></div>
+
+<div class="tgl tgl-up" onclick="this.classList.toggle('active')"><div class="knob"></div></div>
+
+</div>
+
+<script>
+// Ripple button JS
+document.querySelectorAll(".btn-ripple").forEach(btn=>{
+    btn.addEventListener("click",e=>{
+        let circle=document.createElement("span");
+        circle.classList.add("ripple-effect");
+        circle.style.left=e.clientX-btn.getBoundingClientRect().left+"px";
+        circle.style.top=e.clientY-btn.getBoundingClientRect().top+"px";
+        btn.appendChild(circle);
+        setTimeout(()=>circle.remove(),600);
+    });
+});
+</script>
+
+</body>
+</html>

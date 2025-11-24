@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Button Effects</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #060606;
+    color: #fff;
+    text-align: center;
+    padding: 40px;
+}
+
+h1 { margin-bottom: 25px; }
+h2 { margin-top: 50px; }
+
+.btn-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+button {
+    padding: 16px 38px;
+    font-size: 17px;
+    cursor: pointer;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+/* ---------------------------------------
+   EXISTING BUTTONS FROM BEFORE
+----------------------------------------- */
+
+/* Glow */
+.btn-glow {
+    background: #1c1c1c;
+    color: #0ff;
+    border: 2px solid #0ff;
+    box-shadow: 0 0 15px #0ff;
+}
+.btn-glow:hover { box-shadow: 0 0 40px #0ff; }
+
+/* Slide Fill */
+.btn-slide {
+    background: transparent;
+    color: #ff008c;
+    border: 2px solid #ff008c;
+}
+.btn-slide::before {
+    content:"";
+    position:absolute;
+    width:0;
+    height:100%;
+    background:#ff008c;
+    left:0;
+    top:0;
+    transition:0.4s;
+    z-index:-1;
+}
+.btn-slide:hover::before { width:100%; }
+
+/* Ripple */
+.btn-ripple { background:#222; color:#fff; }
+.ripple-effect {
+    position:absolute;
+    background:rgba(255,255,255,0.4);
+    border-radius:50%;
+    transform:scale(0);
+    animation:ripple .6s linear;
+}
+@keyframes ripple {
+    to { transform:scale(4); opacity:0; }
+}
+
+/* 3D */
+.btn-3d {
+    background:#28a745;
+    color:#fff;
+    box-shadow:0 6px #1f7a33;
+}
+.btn-3d:active { transform:translateY(4px); box-shadow:0 2px #1f7a33; }
+
+/* Border Draw */
+.btn-border { background:transparent; color:#00d9ff; }
+.btn-border::before, .btn-border::after {
+    content:"";
+    position:absolute;
+    width:0; height:2px;
+    background:#00d9ff;
+    transition:.3s;
+}
+.btn-border::before { top:0; left:0; }
+.btn-border::after { bottom:0; right:0; }
+.btn-border:hover::before, .btn-border:hover::after { width:100%; }
+
+/* Gradient */
+.btn-gradient {
+    color:#fff;
+    background:linear-gradient(45deg,#ff00c8,#6200ff,#00eaff);
+    background-size:300%;
+    animation:gradientMove 4s linear infinite;
+}
+@keyframes gradientMove {
+    0%{background-position:0;} 50%{background-position:100%;} 100%{background-position:0;}
+}
+
+/* Neon */
+.btn-neon {
+    background:#111; color:#0f0;
+    border:2px solid #0f0;
+    box-shadow:0 0 10px #0f0;
+    animation: neonpulse 1.4s infinite alternate;
+}
+@keyframes neonpulse {
+    from{box-shadow:0 0 10px #0f0;} to{box-shadow:0 0 25px #0f0;}
+}
+
+/* Liquid */
+.btn-liquid {
+    background:linear-gradient(45deg,#0099ff,#00ffaa);
+    color:#fff;
+    position:relative;
+}
+.btn-liquid::after {
+    content:"";
+    position:absolute;
+    width:120%;
+    height:120%;
+    background:rgba(255,255,255,0.2);
+    top:-50px;
+    left:-50px;
+    border-radius:50%;
+    animation:liquid 3s infinite linear;
+}
+@keyframes liquid {
+    0%{transform:translate(0,0);} 50%{transform:translate(40px,40px);} 100%{transform:translate(0,0);}
+}
+
+/* Magnetic Hover */
+.btn-magnetic { background:#333; color:#fff; }
+.btn-magnetic:hover { transform:scale(1.1); }
+
+/* ---------------------------------------
+   🔥 NEW BUTTON EFFECTS (ADDED NOW)
+----------------------------------------- */
+
+/* GLASSMORPHISM */
+.btn-glass {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(255,255,255,0.1);
+}
+.btn-glass:hover { background: rgba(255,255,255,0.2); }
+
+/* FIRE / LAVA */
+.btn-fire {
+    background: linear-gradient(45deg, #ff3000, #ff8c00);
+    color: white;
+    animation: firePulse 1.5s infinite alternate;
+}
+@keyframes firePulse {
+    0% { box-shadow: 0 0 10px #ff3000; }
+    100% { box-shadow: 0 0 40px #ff8c00; }
+}
+
+/* WATER WAVE */
+.btn-water {
+    background: #0077ff;
+    color: white;
+    border: 2px solid #66c0ff;
+    overflow: hidden;
+}
+.btn-water::after {
+    content: "";
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: 100%;
+    left: -50%;
+    background: rgba(255,255,255,0.2);
+    border-radius: 45%;
+    animation: wave 3s infinite ease-out;
+}
+@keyframes wave {
+    0% { top: 100%; }
+    100% { top: -150%; }
+}
+
+/* CIRCLE EXPAND */
+.btn-expand {
+    background: #8417ff;
+    color: #fff;
+}
+.btn-expand:hover {
+    border-radius: 50px;
+    transform: scale(1.12);
+}
+
+/* BLOB MORPHING */
+.btn-blob {
+    background: #ff00aa;
+    color: #fff;
+    border-radius: 25px;
+    animation: blob 5s infinite ease-in-out;
+}
+@keyframes blob {
+    0%,100% { border-radius: 40% 60% 60% 40%; }
+    50% { border-radius: 60% 40% 50% 70%; }
+}
+
+/* CYBERPUNK GAMING STYLE */
+.btn-cyber {
+    color: #0affff;
+    background: #0a0a0a;
+    border: 2px solid #0affff;
+    box-shadow: 0 0 15px #0affff;
+    text-shadow: 0 0 5px #0affff;
+}
+.btn-cyber:hover {
+    box-shadow: 0 0 25px #00ffff, inset 0 0 15px #00ffff;
+}
+
+/* ---------------------------------------
+   TOGGLES (same as before)
+----------------------------------------- */
+.switch { position:relative; width:65px; height:34px; display:inline-block; }
+.switch input { display:none; }
+.slider {
+    position:absolute;
+    cursor:pointer;
+    background:#555;
+    border-radius:34px;
+    transition:.4s;
+    inset:0;
+}
+.slider:before {
+    content:"";
+    position:absolute;
+    height:26px;
+    width:26px;
+    left:4px;
+    bottom:4px;
+    background:white;
+    border-radius:50%;
+    transition:.4s;
+}
+input:checked + .slider {
+    background:#00d900;
+}
+input:checked + .slider:before {
+    transform:translateX(30px);
+}
+
+/* iOS toggle */
+.ios-switch {
+    width:60px;
+    height:30px;
+    border-radius:30px;
+    background:#666;
+    position:relative;
+    cursor:pointer;
+}
+.ios-switch .circle {
+    width:24px; height:24px;
+    background:white;
+    position:absolute;
+    top:3px; left:3px;
+    border-radius:50%;
+    transition:.3s;
+}
+.ios-switch.active {
+    background:#34c759;
+}
+.ios-switch.active .circle {
+    transform:translateX(28px);
+}
+</style>
+</head>
+
+<body>
+<h1>Ultimate Button Animation Collection</h1>
+
+<div class="btn-container">
+
+    <!-- old ones -->
+    <button class="btn-glow">Glow</button>
+    <button class="btn-slide">Slide Fill</button>
+    <button class="btn-ripple">Ripple</button>
+    <button class="btn-3d">3D Press</button>
+    <button class="btn-border">Border Draw</button>
+    <button class="btn-gradient">Gradient</button>
+    <button class="btn-neon">Neon Pulse</button>
+    <button class="btn-liquid">Liquid Bubble</button>
+    <button class="btn-magnetic">Magnetic Hover</button>
+
+    <!-- new ones -->
+    <button class="btn-glass">Glassmorphism</button>
+    <button class="btn-fire">Fire / Lava</button>
+    <button class="btn-water">Water Wave</button>
+    <button class="btn-expand">Circle Expand</button>
+    <button class="btn-blob">Morphing Blob</button>
+    <button class="btn-cyber">Cyberpunk</button>
+
+</div>
+
+<h2>Toggles</h2>
+
+<!-- slider toggle -->
+<label class="switch">
+    <input type="checkbox">
+    <span class="slider"></span>
+</label>
+
+<br><br>
+
+<!-- iOS toggle -->
+<div class="ios-switch" id="iosToggle">
+    <div class="circle"></div>
+</div>
+
+<script>
+// Ripple JS
+document.querySelectorAll('.btn-ripple').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        const circle = document.createElement("span");
+        circle.classList.add("ripple-effect");
+        const rect = btn.getBoundingClientRect();
+        circle.style.left = (e.clientX - rect.left) + "px";
+        circle.style.top = (e.clientY - rect.top) + "px";
+        btn.appendChild(circle);
+        setTimeout(() => circle.remove(), 600);
+    });
+});
+
+// iOS toggle
+document.getElementById("iosToggle").onclick = function() {
+    this.classList.toggle("active");
+};
+</script>
+
+</body>
+</html>

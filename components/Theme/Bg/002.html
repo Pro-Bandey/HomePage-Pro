@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auto Background Changer</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+    body {
+        margin: 0;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        transition: background-image 0.6s ease-in-out;
+        font-family: Arial, sans-serif;
+        color: white;
+    }
+    .control-box {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0,0,0,0.5);
+        padding: 15px;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        width: 250px;
+    }
+    select, button {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: none;
+        margin-top: 8px;
+        outline: none;
+    }
+    button {
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<div class="control-box">
+    <label style="color:white;">Change Background Every:</label>
+    <select id="timeSelect">
+        <option value="refresh">On Refresh</option>
+        <option value="5m">Every 5 Minutes</option>
+        <option value="10m">Every 10 Minutes</option>
+        <option value="15m">Every 15 Minutes</option>
+        <option value="30m">Every 30 Minutes</option>
+        <option value="1h">Every 1 Hour</option>
+        <option value="2h">Every 2 Hours</option>
+        <option value="daily">Daily</option>
+    </select>
+
+    <label style="color:white; margin-top:10px;">Shuffle:</label>
+    <select id="shuffleSelect">
+        <option value="on">ON</option>
+        <option value="off">OFF</option>
+    </select>
+
+    <button onclick="applySetting()">Apply</button>
+    <button onclick="nextWallpaper()">Next Wallpaper</button>
+</div>
+
+<script>
+    // LOCAL image folder example:
+    const wallpapers = [
+        "wallpapers/bg1.jpg",
+        "wallpapers/bg2.jpg",
+        "wallpapers/bg3.jpg",
+        "wallpapers/bg4.jpg",
+        "wallpapers/bg5.jpg"
+    ];
+
+    let currentIndex = Number(localStorage.getItem("currentIndex")) || 0;
+
+    function getRandomIndex() {
+        return Math.floor(Math.random() * wallpapers.length);
+    }
+
+    function getNextIndex(shuffle) {
+        if (shuffle === "on") {
+            return getRandomIndex();
+        } else {
+            return (currentIndex + 1) % wallpapers.length;
+        }
+    }
+
+    function setBackground(index) {
+        currentIndex = index;
+        document.body.style.backgroundImage = `url('${wallpapers[index]}')`;
+
+        localStorage.setItem("currentIndex", index);
+        localStorage.setItem("lastChange", Date.now());
+    }
+
+    function loadBackground() {
+        const mode = localStorage.getItem("bgMode") || "refresh";
+        const shuffle = localStorage.getItem("shuffleMode") || "on";
+
+        document.getElementById("timeSelect").value = mode;
+        document.getElementById("shuffleSelect").value = shuffle;
+
+        const lastChange = localStorage.getItem("lastChange") || 0;
+        const now = Date.now();
+        const interval = getIntervalMs(mode);
+
+        if (mode === "refresh") {
+            setBackground(getNextIndex(shuffle));
+            return;
+        }
+
+        if ((now - lastChange) >= interval) {
+            setBackground(getNextIndex(shuffle));
+        } else {
+            setBackground(currentIndex);
+        }
+
+        if (interval > 0) {
+            setInterval(() => {
+                setBackground(getNextIndex(shuffle));
+            }, interval);
+        }
+    }
+
+    function nextWallpaper() {
+        const shuffle = localStorage.getItem("shuffleMode") || "on";
+        setBackground(getNextIndex(shuffle));
+    }
+
+    function getIntervalMs(mode) {
+        switch (mode) {
+            case "5m": return 5 * 60 * 1000;
+            case "10m": return 10 * 60 * 1000;
+            case "15m": return 15 * 60 * 1000;
+            case "30m": return 30 * 60 * 1000;
+            case "1h": return 60 * 60 * 1000;
+            case "2h": return 2 * 60 * 60 * 1000;
+            case "daily": return 24 * 60 * 60 * 1000;
+            default: return 0;
+        }
+    }
+
+    function applySetting() {
+        const mode = document.getElementById("timeSelect").value;
+        const shuffle = document.getElementById("shuffleSelect").value;
+
+        localStorage.setItem("bgMode", mode);
+        localStorage.setItem("shuffleMode", shuffle);
+
+        location.reload();
+    }
+
+    // register service worker (PWA)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+
+    loadBackground();
+</script>
+
+</body>
+</html>

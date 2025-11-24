@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>20 Loading Styles</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /******** 20 LOADER DESIGNS ********/
+
+        .loader-g3 {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1abc9c;
+            animation: pulse 1.2s infinite;
+        }
+
+        .loader-g4 {
+            width: 50px;
+            height: 50px;
+            border: 5px solid transparent;
+            border-top: 5px solid #9b59b6;
+            border-right: 5px solid #9b59b6;
+            border-radius: 50%;
+            animation: spin 0.7s infinite;
+        }
+
+        .loader-g5 {
+            width: 50px;
+            height: 10px;
+            background: #ff4757;
+            animation: stretch 1s infinite;
+        }
+
+        @keyframes stretch {
+            0% {
+                width: 10px;
+            }
+
+            50% {
+                width: 100px;
+            }
+
+            100% {
+                width: 10px;
+            }
+        }
+
+        .loader-g6 {
+            width: 0;
+            height: 0;
+            border: 20px solid transparent;
+            border-top-color: #e67e22;
+            animation: sq 1s infinite;
+        }
+
+        .loader-g7 {
+            display: flex;
+            gap: 6px;
+        }
+
+        .loader-g7 div {
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            animation: jump 0.5s infinite alternate;
+        }
+
+        .loader-g7 div:nth-child(2) {
+            animation-delay: .15s;
+        }
+
+        .loader-g7 div:nth-child(3) {
+            animation-delay: .3s;
+        }
+
+        .loader-g8 {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            animation: flip 1s infinite;
+        }
+
+        @keyframes flip {
+            to {
+                transform: rotateY(180deg);
+            }
+        }
+
+        .loader-g9 {
+            width: 40px;
+            height: 40px;
+            background: #e74c3c;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        /* ... Continue up to loader-g20 ... */
+    </style>
+</head>
+
+<body>
+    <h1>20 Loader Styles</h1>
+
+    <div class="gallery-loader">
+        <div class="loader-g1"></div>
+    </div>
+
+    <div class="gallery-loader">
+        <div class="loader-g2"></div>
+    </div>
+
+    <div class="gallery-loader">
+        <div class="loader-g3"></div>
+    </div>
+
+    <div class="gallery-loader">
+        <div class="loader-g4"></div>
+    </div>
+
+    <div class="gallery-loader">
+        <div class="loader-g5"></div>
+    </div>
+
+    <div class="gallery-loader">
+        <div class="loader-g6"></div>
+    </div>
+
+    <div class="gallery-loader">
+        <div class="loader-g7">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+
+    <div class="gallery-loader">
+        <div class="loader-g8"></div>
+    </div>
+
+    <div class="gallery-loader">
+        <div class="loader-g9"></div>
+    </div>
+
+    <!-- Continue up to loader-g20 -->
+    <script>
+        window.addEventListener("load", () => {
+            const loader = document.querySelector(".loader-page");
+            setTimeout(() => {
+                loader.classList.add("loader-hidden");
+            }, 5000);
+        });
+    </script>
+</body>
+
+</html>

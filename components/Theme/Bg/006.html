@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Background Changer</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+    margin: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background 1s ease-in-out;
+    font-family: Arial, sans-serif;
+    color: white;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.control-box {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    width: 340px;
+}
+.control-box label {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+.control-box select,
+.control-box input[type="color"],
+.control-box input[type="text"],
+.control-box button {
+    width: 100%;
+    padding: 8px;
+    margin-top: 6px;
+    border: none;
+    border-radius: 6px;
+    outline: none;
+    font-size: 1em;
+}
+.control-box button {
+    cursor: pointer;
+    margin-top: 12px;
+}
+.preview {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 120px;
+    height: 68px;
+    border: 2px solid white;
+    overflow: hidden;
+}
+.preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+</style>
+</head>
+
+<body>
+
+<div class="control-box">
+    <label>Background Source:</label>
+    <select id="sourceSelect" onchange="onSourceChange()">
+        <option value="unsplash">Online (Unsplash)</option>
+        <option value="local">Upload Local Images</option>
+        <option value="solid">Solid Color</option>
+        <option value="gradient">Gradient Color</option>
+        <option value="link">Custom Image via URL</option>
+    </select>
+
+    <div id="extraOptions"></div>
+
+    <label>Change Interval:</label>
+    <select id="timeSelect">
+        <option value="refresh">On Refresh</option>
+        <option value="5m">Every 5 Minutes</option>
+        <option value="10m">Every 10 Minutes</option>
+        <option value="15m">Every 15 Minutes</option>
+        <option value="30m">Every 30 Minutes</option>
+        <option value="1h">Every 1 Hour</option>
+        <option value="2h">Every 2 Hours</option>
+        <option value="daily">Daily</option>
+    </select>
+
+    <label>Shuffle Mode:</label>
+    <select id="shuffleSelect">
+        <option value="on">ON</option>
+        <option value="off">OFF</option>
+    </select>
+
+    <button onclick="applySettings()">Apply Settings</button>
+    <button onclick="nextBackground()">Next Background</button>
+</div>
+
+<div class="preview" id="previewBox">
+    <img id="previewImg" src="" alt="Preview">
+</div>
+
+<script>
+// --- Global State ---
+let localImages = JSON.parse(localStorage.getItem('localImages') || '[]');
+let currentIndex = Number(localStorage.getItem('currentIndex') || 0);
+let lastUnsplashUrl = '';
+
+// --- Gradient Styles ---
+const gradientStyles = {
+    'linear-to-right': 'to right',
+    'linear-to-left': 'to left',
+    'linear-to-top': 'to top',
+    'linear-to-bottom': 'to bottom',
+    'linear-to-tr': 'to top right',
+    'linear-to-bl': 'to bottom left',
+    'radial-circle': 'circle',
+    'radial-ellipse': 'ellipse',
+    'conic': 'conic'
+};
+
+// --- UI Handlers ---
+function onSourceChange(){
+    const src = document.getElementById('sourceSelect').value;
+    const extra = document.getElementById('extraOptions');
+    extra.innerHTML = '';
+
+    if(src==='link'){
+        extra.innerHTML='<input type="text" id="linkInput" placeholder="Enter image URL">';
+    } else if(src==='solid'){
+        extra.innerHTML='<input type="color" id="colorPicker" value="#ffffff">';
+    } else if(src==='gradient'){
+        extra.innerHTML=`
+            <label>Gradient Style:</label>
+            <select id="gradientStyle">
+                <option value="linear-to-right">Linear: to right</option>
+                <option value="linear-to-left">Linear: to left</option>
+                <option value="linear-to-top">Linear: to top</option>
+                <option value="linear-to-bottom">Linear: to bottom</option>
+                <option value="linear-to-tr">Linear: to top right</option>
+                <option value="linear-to-bl">Linear: to bottom left</option>
+                <option value="radial-circle">Radial: circle</option>
+                <option value="radial-ellipse">Radial: ellipse</option>
+                <option value="conic">Conic</option>
+            </select>
+            <label>From Color:</label><input type="color" id="gradFrom" value="#ff7e5f">
+            <label>To Color:</label><input type="color" id="gradTo" value="#feb47b">
+        `;
+    } else if(src==='local'){
+        extra.innerHTML='<input type="file" id="fileInput" accept="image/*" multiple>';
+        document.getElementById('fileInput')?.addEventListener('change', handleLocalFiles);
+    }
+}
+
+function handleLocalFiles(e){
+    const files = Array.from(e.target.files);
+    const urls = files.map(f=>URL.createObjectURL(f));
+    localImages = localImages.concat(urls);
+    if(localImages.length>50) localImages=localImages.slice(-50);
+    localStorage.setItem('localImages', JSON.stringify(localImages));
+}
+
+// --- Helper ---
+function getUnsplashRandomUrl(){ return 'https://source.unsplash.com/random/1920x1080?t=' + Date.now(); }
+function getIntervalMs(mode){
+    switch(mode){
+        case '5m': return 5*60*1000;
+        case '10m': return 10*60*1000;
+        case '15m': return 15*60*1000;
+        case '30m': return 30*60*1000;
+        case '1h': return 60*60*1000;
+        case '2h': return 2*60*60*1000;
+        case 'daily': return 24*60*60*1000;
+        default: return 0;
+    }
+}
+function getNextIndex(len, shuffle){ return shuffle==='on'? Math.floor(Math.random()*len) : (currentIndex+1)%len; }
+function updatePreview(src){ document.getElementById('previewImg').src = src || ''; }
+function getGradientCSS(){
+    const style=document.getElementById('gradientStyle')?.value||'linear-to-right';
+    const from=document.getElementById('gradFrom')?.value||'#ff7e5f';
+    const to=document.getElementById('gradTo')?.value||'#feb47b';
+    if(style.startsWith('linear')) return `linear-gradient(${gradientStyles[style]}, ${from}, ${to})`;
+    if(style.startsWith('radial')) return `radial-gradient(${gradientStyles[style]}, ${from}, ${to})`;
+    if(style==='conic') return `conic-gradient(from 0deg at center, ${from}, ${to})`;
+    return `linear-gradient(to right, ${from}, ${to})`;
+}
+
+// --- Main Background Function ---
+function setBackground(type,index=0){
+    let bg='', preview=null;
+    if(type==='unsplash'){ bg=`url('${getUnsplashRandomUrl()}')`; preview=bg; }
+    else if(type==='local'){ if(localImages.length===0) return; bg=`url('${localImages[index]}')`; preview=localImages[index]; }
+    else if(type==='solid'){ bg=document.getElementById('colorPicker')?.value||'#ffffff'; }
+    else if(type==='gradient'){ bg=getGradientCSS(); }
+    else if(type==='link'){ const url=document.getElementById('linkInput')?.value; if(!url)return; bg=`url('${url}')`; preview=url; }
+    document.body.style.background=bg;
+    currentIndex=index;
+    localStorage.setItem('bgType', type);
+    localStorage.setItem('currentIndex', index);
+    localStorage.setItem('lastChange', Date.now());
+    if(preview) localStorage.setItem('lastBgURL', preview);
+    updatePreview(preview);
+}
+
+// --- Next Background ---
+function nextBackground(){
+    const type=localStorage.getItem('bgType')||'unsplash';
+    const shuffle=localStorage.getItem('shuffleMode')||'on';
+    let nextIndex=0;
+    if(type==='local') nextIndex=getNextIndex(localImages.length, shuffle);
+    setBackground(type,nextIndex);
+}
+
+// --- Apply Settings ---
+function applySettings(){
+    const type=document.getElementById('sourceSelect').value;
+    const shuffle=document.getElementById('shuffleSelect').value;
+    const mode=document.getElementById('timeSelect').value;
+    localStorage.setItem('bgMode', mode);
+    localStorage.setItem('shuffleMode', shuffle);
+    localStorage.setItem('bgType', type);
+    nextBackground();
+    setupInterval();
+}
+
+// --- Interval ---
+let intervalId=null;
+function setupInterval(){
+    if(intervalId) clearInterval(intervalId);
+    const mode=localStorage.getItem('bgMode')||'refresh';
+    const interval=getIntervalMs(mode);
+    if(interval>0) intervalId=setInterval(nextBackground, interval);
+}
+
+// --- Load initial background ---
+function loadInitialBackground(){
+    const type=localStorage.getItem('bgType')||'unsplash';
+    const lastChange=Number(localStorage.getItem('lastChange')||0);
+    const mode=localStorage.getItem('bgMode')||'refresh';
+    const interval=getIntervalMs(mode);
+    const index=Number(localStorage.getItem('currentIndex')||0);
+    if(mode==='refresh'||Date.now()-lastChange>=interval) nextBackground();
+    else {
+        if(type==='unsplash'){ const url=localStorage.getItem('lastBgURL')||getUnsplashRandomUrl(); document.body.style.background=`url('${url}')`; updatePreview(url); }
+        else if(type==='local' && localImages[index]){ document.body.style.background=`url('${localImages[index]}')`; updatePreview(localImages[index]); }
+        else setBackground(type,index);
+    }
+    setupInterval();
+}
+
+// --- Keyboard Shortcuts ---
+document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight') nextBackground();
+    if(e.key==='ArrowLeft'){
+        const type=localStorage.getItem('bgType')||'unsplash';
+        if(type==='local'){ const len=localImages.length; const shuffle=localStorage.getItem('shuffleMode')||'on'; let prevIndex=shuffle==='on'? Math.floor(Math.random()*len) : (currentIndex-1+len)%len; setBackground(type, prevIndex); }
+        else nextBackground();
+    }
+    if(e.key.toLowerCase()==='s'){ const shuffle=localStorage.getItem('shuffleMode')||'on'; localStorage.setItem('shuffleMode', shuffle==='on'?'off':'on'); alert('Shuffle: '+(shuffle==='on'?'OFF':'ON')); }
+});
+
+// --- PWA Service Worker ---
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').then(()=>console.log('SW registered')); }
+
+// --- Initialize ---
+onSourceChange();
+loadInitialBackground();
+</script>
+
+</body>
+</html>

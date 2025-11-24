@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auto Background Changer</title>
+
+<style>
+    body {
+        margin: 0;
+        background-size: cover;
+        background-position: center;
+        transition: background-image 0.6s ease-in-out;
+        font-family: Arial, sans-serif;
+        color: white;
+    }
+    .control-box {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0,0,0,0.5);
+        padding: 15px;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+    }
+    select, button {
+        padding: 8px 12px;
+        margin-top: 8px;
+        border-radius: 6px;
+        border: none;
+        outline: none;
+    }
+</style>
+</head>
+<body>
+
+<div class="control-box">
+    <label style="color:white;">Change Background Every:</label><br>
+    <select id="timeSelect">
+        <option value="refresh">On Refresh</option>
+        <option value="5m">Every 5 Minutes</option>
+        <option value="10m">Every 10 Minutes</option>
+        <option value="15m">Every 15 Minutes</option>
+        <option value="30m">Every 30 Minutes</option>
+        <option value="1h">Every 1 Hour</option>
+        <option value="2h">Every 2 Hours</option>
+        <option value="daily">Daily</option>
+    </select>
+    <button onclick="applySetting()">Apply</button>
+</div>
+
+<script>
+    // Add your background images here
+    const wallpapers = [
+        "https://picsum.photos/seed/a/1920/1080",
+        "https://picsum.photos/seed/b/1920/1080",
+        "https://picsum.photos/seed/c/1920/1080",
+        "https://picsum.photos/seed/d/1920/1080",
+        "https://picsum.photos/seed/e/1920/1080"
+    ];
+
+    function getRandomWallpaper() {
+        return wallpapers[Math.floor(Math.random() * wallpapers.length)];
+    }
+
+    function setBackground() {
+        const img = getRandomWallpaper();
+        document.body.style.backgroundImage = `url('${img}')`;
+        localStorage.setItem("lastBackground", img);
+        localStorage.setItem("lastChange", Date.now());
+    }
+
+    function loadBackground() {
+        const mode = localStorage.getItem("bgMode") || "refresh";
+        const lastBg = localStorage.getItem("lastBackground");
+        const lastChange = localStorage.getItem("lastChange");
+
+        document.getElementById("timeSelect").value = mode;
+
+        if (mode === "refresh") {
+            setBackground();
+            return;
+        }
+
+        if (!lastBg || !lastChange) {
+            setBackground();
+            return;
+        }
+
+        // Calculate interval milliseconds
+        const now = Date.now();
+        const diff = now - Number(lastChange);
+        const interval = getIntervalMs(mode);
+
+        if (diff >= interval) {
+            setBackground();
+        } else {
+            document.body.style.backgroundImage = `url('${lastBg}')`;
+        }
+
+        // Auto update interval
+        setInterval(() => {
+            setBackground();
+        }, interval);
+    }
+
+    function getIntervalMs(mode) {
+        switch (mode) {
+            case "5m": return 5 * 60 * 1000;
+            case "10m": return 10 * 60 * 1000;
+            case "15m": return 15 * 60 * 1000;
+            case "30m": return 30 * 60 * 1000;
+            case "1h": return 60 * 60 * 1000;
+            case "2h": return 2 * 60 * 60 * 1000;
+            case "daily": return 24 * 60 * 60 * 1000;
+            default: return 0;
+        }
+    }
+
+    function applySetting() {
+        const mode = document.getElementById("timeSelect").value;
+        localStorage.setItem("bgMode", mode);
+        location.reload();
+    }
+
+    loadBackground();
+</script>
+
+</body>
+</html>

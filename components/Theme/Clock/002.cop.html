@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customizable Clock</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .clock-container {
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .analog-clock {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      border: 5px solid black;
+      border-radius: 50%;
+      background-color: white;
+      display: none;
+    }
+
+    .digital-clock {
+      font-size: 40px;
+      color: #333;
+      display: none;
+    }
+
+    .hand {
+      position: absolute;
+      width: 50%;
+      height: 3px;
+      background-color: black;
+      transform-origin: 100%;
+      top: 50%;
+      left: 50%;
+      transform: rotate(90deg);
+    }
+
+    .hour {
+      height: 6px;
+    }
+
+    .minute {
+      background-color: gray;
+    }
+
+    .second {
+      background-color: red;
+      height: 2px;
+    }
+
+    .settings-panel {
+      margin-top: 20px;
+    }
+
+    .settings-panel label {
+      margin-right: 10px;
+    }
+
+    .settings-panel input[type="color"],
+    .settings-panel button {
+      margin-left: 10px;
+    }
+
+    .center-dot {
+      width: 10px;
+      height: 10px;
+      background: black;
+      position: absolute;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .visible {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Customizable Clock</h1>
+  <div class="clock-container">
+    <div class="analog-clock" id="analog-clock">
+      <div class="hand hour" id="hour-hand"></div>
+      <div class="hand minute" id="minute-hand"></div>
+      <div class="hand second" id="second-hand"></div>
+      <div class="center-dot"></div>
+    </div>
+    <div class="digital-clock" id="digital-clock"></div>
+  </div>
+  
+  <div class="settings-panel">
+    <label>
+      <input type="radio" name="clock-type" value="analog" id="analog-radio" checked> Analog
+    </label>
+    <label>
+      <input type="radio" name="clock-type" value="digital" id="digital-radio"> Digital
+    </label>
+    <br><br>
+    <label>
+      <input type="checkbox" id="show-am-pm"> Show AM/PM
+    </label>
+    <label>
+      <input type="checkbox" id="show-date"> Show Date
+    </label>
+    <label>
+      <input type="checkbox" id="show-day"> Show Day
+    </label>
+    <br><br>
+    <button onclick="exportSettings()">Export Settings</button>
+    <button onclick="importSettings()">Import Settings</button>
+    <input type="file" id="settings-file" style="display: none;">
+  </div>
+
+  <script>
+    const analogClockEl = document.getElementById('analog-clock');
+    const digitalClockEl = document.getElementById('digital-clock');
+    const hourHandEl = document.getElementById('hour-hand');
+    const minuteHandEl = document.getElementById('minute-hand');
+    const secondHandEl = document.getElementById('second-hand');
+    const analogRadio = document.getElementById('analog-radio');
+    const digitalRadio = document.getElementById('digital-radio');
+    const showAmPmCheckbox = document.getElementById('show-am-pm');
+    const showDateCheckbox = document.getElementById('show-date');
+    const showDayCheckbox = document.getElementById('show-day');
+    const settingsFileInput = document.getElementById('settings-file');
+
+    function updateClock() {
+      const now = new Date();
+
+      // Analog clock logic
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+      const hourDegrees = (hours % 12) * 30 + minutes * 0.5;
+      const minuteDegrees = minutes * 6 + seconds * 0.1;
+      const secondDegrees = seconds * 6;
+      hourHandEl.style.transform = `rotate(${hourDegrees}deg)`;
+      minuteHandEl.style.transform = `rotate(${minuteDegrees}deg)`;
+      secondHandEl.style.transform = `rotate(${secondDegrees}deg)`;
+
+      // Digital clock logic
+      let hoursDisplay = hours;
+      if (!showAmPmCheckbox.checked && hoursDisplay > 12) {
+        hoursDisplay -= 12;
+      }
+      const amPm = hours >= 12 ? 'PM' : 'AM';
+      const date = now.toLocaleDateString();
+      const day = now.toLocaleDateString('en-us', { weekday: 'long' });
+      let digitalDisplay = `${hoursDisplay.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      if (showAmPmCheckbox.checked) digitalDisplay += ` ${amPm}`;
+      if (showDateCheckbox.checked) digitalDisplay += `  ${date}`;
+      if (showDayCheckbox.checked) digitalDisplay += `  ${day}`;
+      digitalClockEl.textContent = digitalDisplay;
+
+      requestAnimationFrame(updateClock);
+    }
+
+    function toggleClock() {
+      if (analogRadio.checked) {
+        analogClockEl.classList.add('visible');
+        digitalClockEl.classList.remove('visible');
+      } else {
+        analogClockEl.classList.remove('visible');
+        digitalClockEl.classList.add('visible');
+      }
+    }
+
+    function exportSettings() {
+      const settings = {
+        clockType: analogRadio.checked ? 'analog' : 'digital',
+        showAmPm: showAmPmCheckbox.checked,
+        showDate: showDateCheckbox.checked,
+        showDay: showDayCheckbox.checked,
+      };
+      const blob = new Blob([JSON.stringify(settings)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'clock-settings.json';
+      a.click();
+    }
+
+    function importSettings() {
+      settingsFileInput.click();
+      settingsFileInput.onchange = event => {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = e => {
+            const settings = JSON.parse(e.target.result);
+            analogRadio.checked = settings.clockType === 'analog';
+            digitalRadio.checked = settings.clockType === 'digital';
+            showAmPmCheckbox.checked = settings.showAmPm;
+            showDateCheckbox.checked = settings.showDate;
+            showDayCheckbox.checked = settings.showDay;
+            toggleClock();
+          };
+          reader.readAsText(file);
+        }
+      };
+    }
+
+    analogRadio.addEventListener('change', toggleClock);
+    digitalRadio.addEventListener('change', toggleClock);
+    updateClock();
+    toggleClock();
+  </script>
+</body>
+</html>

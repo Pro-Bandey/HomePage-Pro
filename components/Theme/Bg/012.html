@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Advanced Background Changer</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial;
+    background: #000;
+    color: #fff;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #controls {
+    width: 300px;
+    padding: 20px;
+    background: #111;
+    overflow-y: auto;
+  }
+  #preview {
+    flex: 1;
+    background-size: cover;
+    background-position: center;
+    transition: background 1s ease;
+  }
+  .section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+  }
+  label { display: block; margin-top: 10px; }
+  input, select, button { width: 100%; padding: 8px; margin-top: 5px; }
+  textarea { width: 100%; height: 80px; }
+</style>
+</head>
+<body>
+<div id="controls">
+  <h2>Background Changer</h2>  <div class="section">
+    <h3>Mode</h3>
+    <select id="mode">
+      <option value="single">Single Color</option>
+      <option value="gradient2">Gradient (2 Colors)</option>
+      <option value="gradient3">Gradient (3 Colors)</option>
+      <option value="images">Image Rotation</option>
+    </select>
+  </div>  <div class="section" id="singleColorBox">
+    <h3>Single Color</h3>
+    <input type="color" id="singleColor" />
+  </div>  <div class="section" id="grad2Box" style="display:none;">
+    <h3>Gradient (Double)</h3>
+    <label>Color 1:</label><input type="color" id="g2c1" />
+    <label>Color 2:</label><input type="color" id="g2c2" />
+  </div>  <div class="section" id="grad3Box" style="display:none;">
+    <h3>Gradient (Triple)</h3>
+    <label>Color 1:</label><input type="color" id="g3c1" />
+    <label>Color 2:</label><input type="color" id="g3c2" />
+    <label>Color 3:</label><input type="color" id="g3c3" />
+  </div>  <div class="section" id="imgBox" style="display:none;">
+    <h3>Image URLs (One per line)</h3>
+    <textarea id="imgList"></textarea>
+    <label>Change Interval (seconds)</label>
+    <input type="number" id="interval" min="1" value="5" />
+  </div>  <div class="section">
+    <h3>Import / Export</h3>
+    <button id="exportBtn">Export Settings</button>
+    <button id="importBtn">Import Settings</button>
+    <textarea id="importData" placeholder="Paste exported settings here"></textarea>
+  </div>
+</div><div id="preview"></div><script>
+const preview = document.getElementById("preview");
+let timer = null;
+
+function save() {
+  const data = {
+    mode: mode.value,
+    single: singleColor.value,
+    g2: [g2c1.value, g2c2.value],
+    g3: [g3c1.value, g3c2.value, g3c3.value],
+    imgs: imgList.value,
+    interval: interval.value
+  };
+  localStorage.setItem("bgSettings", JSON.stringify(data));
+}
+function load() {
+  const data = JSON.parse(localStorage.getItem("bgSettings"));
+  if (!data) return;
+  mode.value = data.mode;
+  singleColor.value = data.single;
+  [g2c1.value, g2c2.value] = data.g2;
+  [g3c1.value, g3c2.value, g3c3.value] = data.g3;
+  imgList.value = data.imgs;
+  interval.value = data.interval;
+  updateUI();
+  applyBackground();
+}
+
+function updateUI() {
+  singleColorBox.style.display = mode.value === "single" ? "block" : "none";
+  grad2Box.style.display = mode.value === "gradient2" ? "block" : "none";
+  grad3Box.style.display = mode.value === "gradient3" ? "block" : "none";
+  imgBox.style.display = mode.value === "images" ? "block" : "none";
+}
+
+function applyBackground() {
+  save();
+  clearInterval(timer);
+
+  if (mode.value === "single") {
+    preview.style.background = singleColor.value;
+  }
+  else if (mode.value === "gradient2") {
+    preview.style.background = `linear-gradient(135deg, ${g2c1.value}, ${g2c2.value})`;
+  }
+  else if (mode.value === "gradient3") {
+    preview.style.background = `linear-gradient(135deg, ${g3c1.value}, ${g3c2.value}, ${g3c3.value})`;
+  }
+  else if (mode.value === "images") {
+    const arr = imgList.value.split("\n").filter(x => x.trim());
+    if (arr.length === 0) return;
+    let i = 0;
+    preview.style.background = `url(${arr[0]}) center/cover`;
+    timer = setInterval(() => {
+      i = (i + 1) % arr.length;
+      preview.style.background = `url(${arr[i]}) center/cover`;
+    }, interval.value * 1000);
+  }
+}
+
+mode.addEventListener("change", () => { updateUI(); applyBackground(); });
+[singleColor, g2c1, g2c2, g3c1, g3c2, g3c3, imgList, interval].forEach(el => {
+  el.addEventListener("input", applyBackground);
+});
+
+// Export settings
+exportBtn.onclick = () => {
+  const data = localStorage.getItem("bgSettings");
+  importData.value = data;
+};
+
+// Import settings
+importBtn.onclick = () => {
+  try {
+    localStorage.setItem("bgSettings", importData.value);
+    load();
+  } catch(e) { alert("Invalid settings data"); }
+};
+
+load();
+</script></body>
+</html>

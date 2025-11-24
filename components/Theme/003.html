@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theme Toggle</title>
+
+<style>
+
+/* =====================================================
+   CUSTOM THEME VARIABLES
+===================================================== */
+:root {
+  --accent: #f44234;
+  --accent-h: #752020;
+  --accent-soft: #f4423499;
+  --border-c: #ff000033;
+  --border-d: #00808033;
+  --green: #00ff00;
+  --red: #ff0000;
+  --teal: #008080;
+  --white: #ffffff;
+  --border: #333;
+  --panel-bkdrop: blur(12px);
+
+  --highlight: #ff9800;
+  --muted: #888;
+  --gray-soft: #7d7d7d33;
+  --gray-mid: #83838366;
+  --gray-light: #ffffff66;
+
+  --text: #000000;
+  --bg: #ffffff;
+  --transulent-bg: #ffffff33;
+  --overlay: #0000001a;
+  --img-invert: invert(1);
+
+  --shadow-o: 0px 0px 5px 1px #ffffff88;
+  --shadow-h: inset 0 0 6px 1px #00000066;
+
+  --alert-bg: #b9b9b977;
+  --alert-heading-bg: #fdfdfd;
+  --alert-heading: #000;
+}
+
+html.dark {
+  --text: #ffffff;
+  --bg: #222;
+  --transulent-bg: #1c1c2233;
+  --overlay: #00000033;
+  --img-invert: invert(0);
+  --shadow-o: 0px 0px 6px 2px #00000066;
+  --shadow-h: inset 0 0 5px 0 #ffffff88;
+
+  --alert-bg: #0009;
+  --alert-heading-bg: #343434;
+  --alert-heading: #ffffff;
+}
+
+/* =====================================================
+   GENERAL PAGE STYLE
+===================================================== */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: sans-serif;
+  padding: 20px;
+  transition: background .3s, color .3s;
+}
+
+
+
+/* =====================================================
+   YOUR EXACT THEME BUTTON (Uiverse)
+===================================================== */
+/* Toggle container */
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+    cursor: pointer;
+}
+
+/* Hide checkbox */
+.theme-switch input {
+    display: none;
+}
+
+/* Track */
+.theme-switch .switch-thumb {
+    background: var(--toggle-bg, #ddd);
+    border-radius: 30px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    justify-content: space-between;
+    transition: background 0.3s ease;
+}
+
+/* Icons */
+.theme-switch .icon {
+    font-size: 18px;
+    pointer-events: none;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+/* Sun right, moon left */
+.sun {
+    order: 2;
+}
+.moon {
+    order: 1;
+}
+
+/* Light mode (checkbox checked) */
+.theme-switch input:checked + .switch-thumb {
+    background: #ffd369;
+}
+
+.theme-switch input:checked + .switch-thumb .sun {
+    opacity: 1;
+}
+.theme-switch input:checked + .switch-thumb .moon {
+    opacity: 0.25;
+}
+
+/* Dark mode (checkbox NOT checked) */
+.theme-switch input:not(:checked) + .switch-thumb {
+    background: #2c2c54;
+}
+
+.theme-switch input:not(:checked) + .switch-thumb .sun {
+    opacity: 0.12;
+}
+.theme-switch input:not(:checked) + .switch-thumb .moon {
+    opacity: 1;
+}
+</style>
+</head>
+<body>
+
+<!-- =====================================================
+     BUTTON HTML
+===================================================== -->
+<label class="theme-switch">
+    <input type="checkbox" id="themeToggle">
+    <span class="switch-thumb">
+        <span class="icon sun">🌞</span>
+        <span class="icon moon">🌙</span>
+    </span>
+</label>
+
+<script>
+/* =====================================================
+   THEME SCRIPT LOGIC
+===================================================== */
+const toggle = document.getElementById("themeToggle");
+
+function applyTheme(mode) {
+    if (mode === "dark") {
+        document.documentElement.classList.add("dark");
+        toggle.checked = false;
+    } else {
+        document.documentElement.classList.remove("dark");
+        toggle.checked = true;
+    }
+    localStorage.setItem("theme", mode);
+}
+
+// Load saved theme
+let saved = localStorage.getItem("theme");
+
+if (saved) {
+    applyTheme(saved);
+} else {
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        applyTheme("dark");
+    } else {
+        applyTheme("light");
+    }
+}
+
+// Toggle manually
+toggle.addEventListener("change", () => {
+    applyTheme(toggle.checked ? "light" : "dark");
+});
+</script>
+
+</body>
+</html>

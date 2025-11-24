@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Advanced Background Changer</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+    margin: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background 0.6s ease-in-out;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+.control-box {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.5);
+    padding: 15px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    width: 270px;
+}
+select, input, button {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: none;
+    margin-top: 8px;
+    outline: none;
+}
+button { cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="control-box">
+    <label>Background Source:</label>
+    <select id="sourceSelect" onchange="changeSourceOption()">
+        <option value="online">Online Pre-provided</option>
+        <option value="local">Local Images</option>
+        <option value="solid">Solid Color</option>
+        <option value="gradient">Gradient</option>
+        <option value="link">Via Link</option>
+    </select>
+
+    <div id="extraOptions" style="margin-top:8px;"></div>
+
+    <label>Change Every:</label>
+    <select id="timeSelect">
+        <option value="refresh">On Refresh</option>
+        <option value="5m">Every 5 Minutes</option>
+        <option value="10m">Every 10 Minutes</option>
+        <option value="15m">Every 15 Minutes</option>
+        <option value="30m">Every 30 Minutes</option>
+        <option value="1h">Every 1 Hour</option>
+        <option value="2h">Every 2 Hours</option>
+        <option value="daily">Daily</option>
+    </select>
+
+    <label>Shuffle:</label>
+    <select id="shuffleSelect">
+        <option value="on">ON</option>
+        <option value="off">OFF</option>
+    </select>
+
+    <button onclick="applySettings()">Apply</button>
+    <button onclick="nextBackground()">Next Background</button>
+</div>
+
+<script>
+// --- ONLINE wallpapers
+const onlineWallpapers = [
+    "https://picsum.photos/1920/1080?random=1",
+    "https://picsum.photos/1920/1080?random=2",
+    "https://picsum.photos/1920/1080?random=3",
+    "https://picsum.photos/1920/1080?random=4",
+    "https://picsum.photos/1920/1080?random=5"
+];
+
+// --- LOCAL wallpapers (user adds to /wallpapers/)
+const localWallpapers = [];
+for (let i = 1; i <= 20; i++) localWallpapers.push(`wallpapers/bg${i}.jpg`);
+
+// --- Solid colors
+const solidColors = ["#FF5733","#33FF57","#3357FF","#F1C40F","#9B59B6"];
+
+// --- Gradients
+const gradients = [
+    "linear-gradient(to right, #ff7e5f, #feb47b)",
+    "linear-gradient(to right, #6a11cb, #2575fc)",
+    "linear-gradient(to right, #43cea2, #185a9d)"
+];
+
+let currentIndex = Number(localStorage.getItem("currentIndex")) || 0;
+
+function getRandomIndex(arrLength){ return Math.floor(Math.random()*arrLength); }
+
+function getNextIndex(arrLength, shuffle){ return shuffle==="on"? getRandomIndex(arrLength) : (currentIndex+1)%arrLength; }
+
+function setBackground(bgType, index, customLink){
+    currentIndex = index;
+    let bgValue;
+    switch(bgType){
+        case "online": bgValue=`url('${onlineWallpapers[index]}')`; break;
+        case "local": bgValue=`url('${localWallpapers[index]}')`; break;
+        case "solid": bgValue=solidColors[index]; break;
+        case "gradient": bgValue=gradients[index]; break;
+        case "link": bgValue=`url('${customLink}')`; break;
+    }
+    document.body.style.background=bgValue;
+    localStorage.setItem("currentIndex", index);
+    localStorage.setItem("bgType", bgType);
+    localStorage.setItem("lastChange", Date.now());
+    if(bgType==="link") localStorage.setItem("customLink", customLink);
+}
+
+function nextBackground(){
+    const bgType = localStorage.getItem("bgType") || "online";
+    const shuffle = localStorage.getItem("shuffleMode") || "on";
+    let arrLength = getArrayLength(bgType);
+    let customLink = localStorage.getItem("customLink") || "";
+    setBackground(bgType,getNextIndex(arrLength,shuffle),customLink);
+}
+
+function getArrayLength(bgType){
+    switch(bgType){
+        case "online": return onlineWallpapers.length;
+        case "local": return localWallpapers.length;
+        case "solid": return solidColors.length;
+        case "gradient": return gradients.length;
+        case "link": return 1;
+    }
+    return 0;
+}
+
+function getIntervalMs(mode){
+    switch(mode){
+        case "5m": return 5*60*1000;
+        case "10m": return 10*60*1000;
+        case "15m": return 15*60*1000;
+        case "30m": return 30*60*1000;
+        case "1h": return 60*60*1000;
+        case "2h": return 2*60*60*1000;
+        case "daily": return 24*60*60*1000;
+        default: return 0;
+    }
+}
+
+function loadBackground(){
+    const bgType = localStorage.getItem("bgType") || "online";
+    const shuffle = localStorage.getItem("shuffleMode") || "on";
+    const lastChange = localStorage.getItem("lastChange") || 0;
+    const now = Date.now();
+    const interval = getIntervalMs(localStorage.getItem("bgMode") || "refresh");
+    document.getElementById("sourceSelect").value = bgType;
+    document.getElementById("shuffleSelect").value = shuffle;
+
+    let arrLength = getArrayLength(bgType);
+    let customLink = localStorage.getItem("customLink") || "";
+
+    if(interval===0 || now - lastChange>=interval){
+        setBackground(bgType,getNextIndex(arrLength,shuffle),customLink);
+    } else {
+        let idx = Number(localStorage.getItem("currentIndex")) || 0;
+        setBackground(bgType,idx,customLink);
+    }
+
+    if(interval>0){
+        setInterval(()=>{ setBackground(bgType,getNextIndex(arrLength,shuffle),customLink); },interval);
+    }
+}
+
+function applySettings(){
+    const bgType = document.getElementById("sourceSelect").value;
+    const shuffle = document.getElementById("shuffleSelect").value;
+    const mode = document.getElementById("timeSelect").value;
+    let customLink = document.getElementById("linkInput")?.value || "";
+
+    localStorage.setItem("bgType", bgType);
+    localStorage.setItem("shuffleMode", shuffle);
+    localStorage.setItem("bgMode", mode);
+    if(bgType==="link") localStorage.setItem("customLink", customLink);
+
+    location.reload();
+}
+
+function changeSourceOption(){
+    const source = document.getElementById("sourceSelect").value;
+    const extraDiv = document.getElementById("extraOptions");
+    extraDiv.innerHTML="";
+    if(source==="link"){
+        extraDiv.innerHTML='<input type="text" id="linkInput" placeholder="Enter image URL">';
+    }
+}
+
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
+loadBackground();
+</script>
+</body>
+</html>

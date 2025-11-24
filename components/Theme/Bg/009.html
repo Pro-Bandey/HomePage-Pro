@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Background Changer</title>
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    transition: background 0.5s;
+    overflow: hidden;
+  }
+
+  #background-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+  }
+
+  #preview-box {
+    width: 300px;
+    height: 200px;
+    border: 2px solid #333;
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  #preview-box img, #preview-box video {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+  }
+
+  #settings {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 320px;
+    background: rgba(255,255,255,0.9);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    z-index: 100;
+  }
+
+  #settings h2 {
+    margin-top: 0;
+  }
+
+  #settings label {
+    display: block;
+    margin: 8px 0 2px;
+  }
+
+  #settings input[type="color"], 
+  #settings input[type="file"],
+  #settings select,
+  #settings button,
+  #settings input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+
+  #settings button {
+    cursor: pointer;
+  }
+
+  .gradient-preview {
+    width: 100%;
+    height: 50px;
+    border: 1px solid #333;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+
+<video id="background-video" autoplay muted loop></video>
+
+<div id="settings">
+  <h2>Background Settings</h2>
+
+  <label for="bg-type">Background Type:</label>
+  <select id="bg-type">
+    <option value="image">Image</option>
+    <option value="video">Video</option>
+    <option value="color">Color / Gradient</option>
+  </select>
+
+  <div id="image-settings">
+    <label for="image-files">Upload Images:</label>
+    <input type="file" id="image-files" accept="image/*" multiple>
+    
+    <label for="image-links">Or Image URLs (comma separated):</label>
+    <input type="text" id="image-links" placeholder="http://example.com/img1.jpg,http://example.com/img2.jpg">
+
+    <label for="image-order">Order:</label>
+    <select id="image-order">
+      <option value="asc">Ascending</option>
+      <option value="desc">Descending</option>
+      <option value="random">Random</option>
+    </select>
+  </div>
+
+  <div id="video-settings" style="display:none;">
+    <label for="video-files">Upload Videos:</label>
+    <input type="file" id="video-files" accept="video/*" multiple>
+    
+    <label for="video-links">Or Video URLs (comma separated):</label>
+    <input type="text" id="video-links" placeholder="http://example.com/video1.mp4,http://example.com/video2.mp4">
+  </div>
+
+  <div id="color-settings" style="display:none;">
+    <label for="single-color">Single Color:</label>
+    <input type="color" id="single-color" value="#000000">
+
+    <label>Gradient Colors:</label>
+    <input type="color" id="grad-color1" value="#ff0000">
+    <input type="color" id="grad-color2" value="#00ff00">
+    <input type="color" id="grad-color3" value="#0000ff">
+
+    <label for="gradient-style">Gradient Style:</label>
+    <select id="gradient-style">
+      <option value="linear">Linear</option>
+      <option value="radial">Radial</option>
+      <option value="diagonal">Diagonal</option>
+    </select>
+    <div id="gradient-preview" class="gradient-preview"></div>
+  </div>
+
+  <label for="refresh-time">Refresh Interval:</label>
+  <select id="refresh-time">
+    <option value="5">5 Minutes</option>
+    <option value="10">10 Minutes</option>
+    <option value="15">15 Minutes</option>
+    <option value="30">30 Minutes</option>
+    <option value="60">1 Hour</option>
+    <option value="120">2 Hours</option>
+    <option value="1440">Daily</option>
+  </select>
+
+  <button id="apply-settings">Apply Settings</button>
+  <button id="export-settings">Export Settings</button>
+  <button id="import-settings">Import Settings</button>
+
+  <h3>Preview:</h3>
+  <div id="preview-box"></div>
+</div>
+
+<script>
+  let settings = {
+    type: "image",
+    images: [],
+    videos: [],
+    colors: { single: "#000000", grad: ["#ff0000","#00ff00","#0000ff"], style: "linear" },
+    order: "asc",
+    refresh: 5
+  };
+
+  let currentIndex = 0;
+  let timer;
+
+  const bgVideo = document.getElementById("background-video");
+  const previewBox = document.getElementById("preview-box");
+
+  const bgTypeSelect = document.getElementById("bg-type");
+  const imageSettings = document.getElementById("image-settings");
+  const videoSettings = document.getElementById("video-settings");
+  const colorSettings = document.getElementById("color-settings");
+
+  const gradPreview = document.getElementById("gradient-preview");
+
+  function updatePreview() {
+    previewBox.innerHTML = "";
+    if(settings.type === "image" && settings.images.length){
+      let img = document.createElement("img");
+      img.src = settings.images[currentIndex % settings.images.length];
+      previewBox.appendChild(img);
+    } else if(settings.type === "video" && settings.videos.length){
+      let vid = document.createElement("video");
+      vid.src = settings.videos[currentIndex % settings.videos.length];
+      vid.autoplay = true;
+      vid.loop = true;
+      vid.muted = true;
+      previewBox.appendChild(vid);
+    } else if(settings.type === "color"){
+      let div = document.createElement("div");
+      div.style.width = "100%";
+      div.style.height = "100%";
+      if(settings.colors.grad.length > 1){
+        let style = settings.colors.style === "radial" ? 
+                    `radial-gradient(${settings.colors.grad.join(",")})` :
+                    settings.colors.style === "diagonal" ?
+                    `linear-gradient(45deg, ${settings.colors.grad.join(",")})` :
+                    `linear-gradient(${settings.colors.grad.join(",")})`;
+        div.style.background = style;
+      } else {
+        div.style.background = settings.colors.single;
+      }
+      previewBox.appendChild(div);
+    }
+  }
+
+  function applyBackground() {
+    if(settings.type === "image" && settings.images.length){
+      bgVideo.style.display = "none";
+      document.body.style.background = `url('${settings.images[currentIndex % settings.images.length]}') center/cover no-repeat`;
+    } else if(settings.type === "video" && settings.videos.length){
+      document.body.style.background = "none";
+      bgVideo.src = settings.videos[currentIndex % settings.videos.length];
+      bgVideo.style.display = "block";
+    } else if(settings.type === "color"){
+      bgVideo.style.display = "none";
+      if(settings.colors.grad.length > 1){
+        let style = settings.colors.style === "radial" ? 
+                    `radial-gradient(${settings.colors.grad.join(",")})` :
+                    settings.colors.style === "diagonal" ?
+                    `linear-gradient(45deg, ${settings.colors.grad.join(",")})` :
+                    `linear-gradient(${settings.colors.grad.join(",")})`;
+        document.body.style.background = style;
+      } else {
+        document.body.style.background = settings.colors.single;
+      }
+    }
+
+    currentIndex++;
+  }
+
+  function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(applyBackground, settings.refresh * 60000);
+  }
+
+  function saveSettings() {
+    localStorage.setItem("bgSettings", JSON.stringify(settings));
+  }
+
+  function loadSettings() {
+    let saved = localStorage.getItem("bgSettings");
+    if(saved){
+      settings = JSON.parse(saved);
+      currentIndex = 0;
+      updatePreview();
+      applyBackground();
+      startTimer();
+    }
+  }
+
+  // Event Listeners
+  bgTypeSelect.addEventListener("change", (e)=>{
+    imageSettings.style.display = e.target.value === "image" ? "block" : "none";
+    videoSettings.style.display = e.target.value === "video" ? "block" : "none";
+    colorSettings.style.display = e.target.value === "color" ? "block" : "none";
+  });
+
+  document.getElementById("apply-settings").addEventListener("click", ()=>{
+    settings.type = bgTypeSelect.value;
+    settings.order = document.getElementById("image-order").value;
+    settings.refresh = parseInt(document.getElementById("refresh-time").value);
+
+    // Images
+    let imgs = [];
+    const fileImages = document.getElementById("image-files").files;
+    for(let f of fileImages){
+      imgs.push(URL.createObjectURL(f));
+    }
+    const linkImages = document.getElementById("image-links").value.split(",").map(i=>i.trim()).filter(i=>i);
+    settings.images = imgs.concat(linkImages);
+
+    // Videos
+    let vids = [];
+    const fileVideos = document.getElementById("video-files").files;
+    for(let f of fileVideos){
+      vids.push(URL.createObjectURL(f));
+    }
+    const linkVideos = document.getElementById("video-links").value.split(",").map(i=>i.trim()).filter(i=>i);
+    settings.videos = vids.concat(linkVideos);
+
+    // Colors
+    settings.colors.single = document.getElementById("single-color").value;
+    settings.colors.grad = [
+      document.getElementById("grad-color1").value,
+      document.getElementById("grad-color2").value,
+      document.getElementById("grad-color3").value
+    ];
+    settings.colors.style = document.getElementById("gradient-style").value;
+
+    updateGradientPreview();
+    updatePreview();
+    applyBackground();
+    startTimer();
+    saveSettings();
+  });
+
+  function updateGradientPreview(){
+    let style = settings.colors.style === "radial" ? 
+                `radial-gradient(${settings.colors.grad.join(",")})` :
+                settings.colors.style === "diagonal" ?
+                `linear-gradient(45deg, ${settings.colors.grad.join(",")})` :
+                `linear-gradient(${settings.colors.grad.join(",")})`;
+    gradPreview.style.background = style;
+  }
+
+  document.getElementById("export-settings").addEventListener("click", ()=>{
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(settings));
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download","bg-settings.json");
+    dlAnchor.click();
+  });
+
+  document.getElementById("import-settings").addEventListener("click", ()=>{
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = e=>{
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = event=>{
+        settings = JSON.parse(event.target.result);
+        currentIndex = 0;
+        updatePreview();
+        applyBackground();
+        startTimer();
+        saveSettings();
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  });
+
+  // Initialize
+  loadSettings();
+</script>
+
+</body>
+</html>

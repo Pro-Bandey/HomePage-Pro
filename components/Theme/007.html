@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theme Toggle Demo</title>
+
+<style>
+    :root {
+        --bg: #ffffff;
+        --text: #000000;
+    }
+
+    [data-theme="dark"] {
+        --bg: #121212;
+        --text: #ffffff;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        font-family: Arial, sans-serif;
+        transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* Toggle Button */
+    .theme-toggle {
+        width: 110px;
+        height: 40px;
+        margin: 20px;
+        background: #ddd;
+        border-radius: 25px;
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        font-size: 12px;
+        font-weight: bold;
+        user-select: none;
+    }
+
+    .theme-toggle::after {
+        content: "";
+        width: 33%;
+        height: 32px;
+        background: #4CAF50;
+        position: absolute;
+        border-radius: 20px;
+        top: 4px;
+        left: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .theme-toggle[data-mode="light"]::after { left: 4px; }
+    .theme-toggle[data-mode="auto"]::after { left: 38px; }
+    .theme-toggle[data-mode="dark"]::after { left: 72px; }
+
+</style>
+</head>
+<body>
+
+<h2 style="text-align:center;">Two-Way Theme Toggle (Light / Auto / Dark)</h2>
+
+<div id="themeToggle" class="theme-toggle" data-mode="auto">
+    <span>Light</span>
+    <span>Auto</span>
+    <span>Dark</span>
+</div>
+
+<script>
+    const toggle = document.getElementById("themeToggle");
+
+    // Load saved theme
+    let savedTheme = localStorage.getItem("themeMode") || "auto";
+    applyTheme(savedTheme);
+
+    toggle.addEventListener("click", () => {
+        let mode = toggle.getAttribute("data-mode");
+
+        if (mode === "light") mode = "auto";
+        else if (mode === "auto") mode = "dark";
+        else mode = "light";
+
+        applyTheme(mode);
+    });
+
+    function applyTheme(mode) {
+        toggle.setAttribute("data-mode", mode);
+        localStorage.setItem("themeMode", mode);
+
+        if (mode === "light") {
+            document.documentElement.setAttribute("data-theme", "light");
+        } 
+        else if (mode === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+        } 
+        else {
+            // Auto (System) Mode
+            const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            document.documentElement.setAttribute("data-theme", systemDark ? "dark" : "light");
+        }
+    }
+
+    // Listen to system theme changes when in AUTO mode
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+        if (localStorage.getItem("themeMode") === "auto") {
+            applyTheme("auto");
+        }
+    });
+</script>
+
+</body>
+</html>

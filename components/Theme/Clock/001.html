@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customizable Clock</title>
+<style>
+  :root {
+    --clock-bg: rgba(0,0,0,0.8);
+    --clock-color: #fff;
+    --clock-font: 'Arial', sans-serif;
+    --clock-size: 250px;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    font-family: var(--clock-font);
+    background-color: #121212;
+    color: var(--clock-color);
+  }
+
+  /* Digital Clock */
+  #digitalClock {
+    font-size: calc(var(--clock-size) / 5);
+    background: var(--clock-bg);
+    padding: 20px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    display: inline-block;
+  }
+
+  /* Analog Clock */
+  
+  #analogClock {
+    width: 200px;
+    height:200px;
+    border: 8px solid var(--clock-color);
+    border-radius: 50%;
+    position: relative;
+    background: var(--clock-bg);
+  }
+
+  .hand {
+    position: absolute;
+    width: 50%;
+    height: 4px;
+    background: var(--clock-color);
+    top: 50%;
+    left: 50%;
+    transform-origin: 0% 50%;
+    transform: rotate(90deg);
+    border-radius: 2px;
+  }
+
+  .hour { height: 6px; }
+  .minute { height: 4px; }
+  .second { height: 2px; background: red; }
+
+  /* Settings Panel */
+  #settings {
+    margin-top: 20px;
+    padding: 20px;
+    background: #222;
+    border-radius: 15px;
+    width: 300px;
+  }
+
+  #settings label {
+    display: block;
+    margin: 5px 0;
+  }
+
+  #clockSwitcher {
+    margin-bottom: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+
+  button { cursor: pointer; }
+
+</style>
+</head>
+<body>
+
+<h1>Customizable Clock</h1>
+
+<button id="clockSwitcher">Switch Clock</button>
+
+<!-- Digital Clock -->
+<div id="digitalClock"></div>
+
+<!-- Analog Clock -->
+<div id="analogClock" style="display:none;">
+  <div class="hand hour" id="hourHand"></div>
+  <div class="hand minute" id="minuteHand"></div>
+  <div class="hand second" id="secondHand"></div>
+</div>
+
+<!-- Settings Panel -->
+<div id="settings">
+  <h3>Clock Settings</h3>
+  <label><input type="checkbox" id="showAmPm" checked> Show AM/PM</label>
+  <label><input type="checkbox" id="showDate" checked> Show Date</label>
+  <label><input type="checkbox" id="showDay" checked> Show Day</label>
+
+  <label>Time Format:
+    <select id="timeFormat">
+      <option value="24">24-Hour</option>
+      <option value="12" selected>12-Hour</option>
+    </select>
+  </label>
+
+  <label>Clock Color: <input type="color" id="clockColor" value="#ffffff"></label>
+  <label>Clock Background: <input type="color" id="clockBg" value="#000000"></label>
+  <label>Clock Size (px): <input type="number" id="clockSize" value="250"></label>
+  <label>Font Family: <input type="text" id="clockFont" value="Arial, sans-serif"></label>
+
+  <button id="exportSettings">Export Settings</button>
+  <button id="importSettings">Import Settings</button>
+  <input type="file" id="importFile" style="display:none;">
+</div>
+
+<script>
+  const digitalClock = document.getElementById('digitalClock');
+  const analogClock = document.getElementById('analogClock');
+  const hourHand = document.getElementById('hourHand');
+  const minuteHand = document.getElementById('minuteHand');
+  const secondHand = document.getElementById('secondHand');
+  const clockSwitcher = document.getElementById('clockSwitcher');
+
+  let showDigital = true;
+
+  clockSwitcher.addEventListener('click', () => {
+    showDigital = !showDigital;
+    digitalClock.style.display = showDigital ? 'block' : 'none';
+    analogClock.style.display = showDigital ? 'none' : 'block';
+  });
+
+  // Settings Elements
+  const showAmPm = document.getElementById('showAmPm');
+  const showDate = document.getElementById('showDate');
+  const showDay = document.getElementById('showDay');
+  const timeFormat = document.getElementById('timeFormat');
+  const clockColor = document.getElementById('clockColor');
+  const clockBg = document.getElementById('clockBg');
+  const clockSize = document.getElementById('clockSize');
+  const clockFont = document.getElementById('clockFont');
+  const exportSettings = document.getElementById('exportSettings');
+  const importSettings = document.getElementById('importSettings');
+  const importFile = document.getElementById('importFile');
+
+  // Clock Update
+  function updateClock() {
+    const now = new Date();
+
+    // Digital Clock
+    let hours = now.getHours();
+    let minutes = now.getMinutes();
+    let seconds = now.getSeconds();
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+
+    if(timeFormat.value === '12') hours = hours % 12 || 12;
+
+    const pad = n => n.toString().padStart(2, '0');
+    let timeStr = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    if(showAmPm.checked) timeStr += ` ${ampm}`;
+
+    if(showDate.checked) timeStr += ` | ${now.toLocaleDateString()}`;
+    if(showDay.checked) timeStr += ` | ${now.toLocaleDateString('en-US', { weekday: 'long' })}`;
+
+    digitalClock.textContent = timeStr;
+
+    // Analog Clock
+    const hourDeg = (now.getHours() % 12 + minutes / 60) * 30;
+    const minuteDeg = (minutes + seconds / 60) * 6;
+    const secondDeg = seconds * 6;
+
+    hourHand.style.transform = `rotate(${hourDeg}deg)`;
+    minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
+    secondHand.style.transform = `rotate(${secondDeg}deg)`;
+
+    requestAnimationFrame(updateClock);
+  }
+  updateClock();
+
+  // Settings Handlers
+  function applySettings() {
+    document.documentElement.style.setProperty('--clock-color', clockColor.value);
+    document.documentElement.style.setProperty('--clock-bg', clockBg.value);
+    document.documentElement.style.setProperty('--clock-size', `${clockSize.value}px`);
+    document.documentElement.style.setProperty('--clock-font', clockFont.value);
+  }
+
+  [clockColor, clockBg, clockSize, clockFont].forEach(el => el.addEventListener('input', applySettings));
+  [showAmPm, showDate, showDay, timeFormat].forEach(el => el.addEventListener('change', updateClock));
+
+  // Export Settings
+  exportSettings.addEventListener('click', () => {
+    const settings = {
+      showAmPm: showAmPm.checked,
+      showDate: showDate.checked,
+      showDay: showDay.checked,
+      timeFormat: timeFormat.value,
+      clockColor: clockColor.value,
+      clockBg: clockBg.value,
+      clockSize: clockSize.value,
+      clockFont: clockFont.value
+    };
+    const blob = new Blob([JSON.stringify(settings)], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'clock-settings.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Import Settings
+  importSettings.addEventListener('click', () => importFile.click());
+  importFile.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function() {
+      const settings = JSON.parse(reader.result);
+      showAmPm.checked = settings.showAmPm;
+      showDate.checked = settings.showDate;
+      showDay.checked = settings.showDay;
+      timeFormat.value = settings.timeFormat;
+      clockColor.value = settings.clockColor;
+      clockBg.value = settings.clockBg;
+      clockSize.value = settings.clockSize;
+      clockFont.value = settings.clockFont;
+      applySettings();
+      updateClock();
+    }
+    reader.readAsText(file);
+  });
+
+  applySettings(); // Apply default settings initially
+</script>
+
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Background Changer</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    body {
+      margin: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: background 1s ease-in-out;
+      font-family: Arial, sans-serif;
+      color: white;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .control-box {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      width: 320px;
+    }
+
+    .control-box label {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.9em;
+    }
+
+    .control-box select,
+    .control-box input[type="color"],
+    .control-box input[type="text"],
+    .control-box button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+      border: none;
+      border-radius: 6px;
+      outline: none;
+      font-size: 1em;
+    }
+
+    .control-box button {
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    .preview {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 120px;
+      height: 68px;
+      border: 2px solid white;
+      overflow: hidden;
+    }
+
+    .preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="control-box">
+    <label for="sourceSelect">Background Source:</label>
+    <select id="sourceSelect" onchange="onSourceChange()">
+      <option value="unsplash">Online (Unsplash)</option>
+      <option value="local">Upload Local Images</option>
+      <option value="solid">Solid Color</option>
+      <option value="gradient">Gradient Color</option>
+      <option value="link">Custom Image via URL</option>
+    </select>
+
+    <div id="extraOptions"></div>
+
+    <label for="timeSelect">Change Interval:</label>
+    <select id="timeSelect">
+      <option value="refresh">On Refresh</option>
+      <option value="5m">Every 5 Minutes</option>
+      <option value="10m">Every 10 Minutes</option>
+      <option value="15m">Every 15 Minutes</option>
+      <option value="30m">Every 30 Minutes</option>
+      <option value="1h">Every 1 Hour</option>
+      <option value="2h">Every 2 Hours</option>
+      <option value="daily">Daily</option>
+    </select>
+
+    <label for="shuffleSelect">Shuffle Mode:</label>
+    <select id="shuffleSelect">
+      <option value="on">ON</option>
+      <option value="off">OFF</option>
+    </select>
+
+    <button onclick="applySettings()">Apply Settings</button>
+    <button onclick="nextBackground()">Next Background</button>
+  </div>
+
+  <div class="preview" id="previewBox">
+    <img id="previewImg" src="" alt="Preview" />
+  </div>
+
+  <script>
+    // ----- Globals / State -----
+
+    // Unsplash random source
+    function getUnsplashRandomUrl() {
+      // Using Unsplash Source (no API key needed)
+      // For random image: https://source.unsplash.com/random
+      // You can add size or query params, e.g. /random/1920x1080 or /random/?nature
+      return 'https://source.unsplash.com/random/1920x1080';
+    }
+
+    let localImages = JSON.parse(localStorage.getItem('localImages') || '[]');
+    let currentIndex = Number(localStorage.getItem('currentIndex') || 0);
+
+    // We will store last preview URL
+    let lastUnsplashUrl = '';
+
+    // ----- UI Helpers -----
+
+    function onSourceChange() {
+      const src = document.getElementById('sourceSelect').value;
+      const extra = document.getElementById('extraOptions');
+      extra.innerHTML = '';
+
+      if (src === 'link') {
+        extra.innerHTML = '<input type="text" id="linkInput" placeholder="Enter image URL" />';
+      } else if (src === 'solid') {
+        extra.innerHTML = '<input type="color" id="colorPicker" value="#ffffff" />';
+      } else if (src === 'gradient') {
+        extra.innerHTML = `
+          <label>From:</label><input type="color" id="gradFrom" value="#ff7e5f" />
+          <label>To:</label><input type="color" id="gradTo" value="#feb47b" />
+        `;
+      } else if (src === 'local') {
+        extra.innerHTML = '<input type="file" id="fileInput" accept="image/*" multiple />';
+        document.getElementById('fileInput').addEventListener('change', handleLocalFiles);
+      }
+    }
+
+    function handleLocalFiles(e) {
+      const files = Array.from(e.target.files);
+      const urls = files.map(f => URL.createObjectURL(f));
+      localImages = localImages.concat(urls);
+      // Limit to, say, 50 images max
+      if (localImages.length > 50) localImages = localImages.slice(-50);
+      localStorage.setItem('localImages', JSON.stringify(localImages));
+      console.log('Local images updated:', localImages);
+    }
+
+    // ----- Background Logic -----
+
+    function getIntervalMs(mode) {
+      switch (mode) {
+        case '5m': return 5 * 60 * 1000;
+        case '10m': return 10 * 60 * 1000;
+        case '15m': return 15 * 60 * 1000;
+        case '30m': return 30 * 60 * 1000;
+        case '1h': return 60 * 60 * 1000;
+        case '2h': return 2 * 60 * 60 * 1000;
+        case 'daily': return 24 * 60 * 60 * 1000;
+        default: return 0;
+      }
+    }
+
+    function setBackground(type, index = 0) {
+      let bg = '';
+      let preview = '';
+
+      if (type === 'unsplash') {
+        const u = getUnsplashRandomUrl() + '?t=' + Date.now();  // add param to prevent caching
+        bg = `url('${u}')`;
+        preview = u;
+        lastUnsplashUrl = u;
+      } else if (type === 'local') {
+        if (localImages.length === 0) return;
+        const url = localImages[index];
+        bg = `url('${url}')`;
+        preview = url;
+      } else if (type === 'solid') {
+        const color = document.getElementById('colorPicker').value;
+        bg = color;
+        preview = null;
+      } else if (type === 'gradient') {
+        const from = document.getElementById('gradFrom').value;
+        const to = document.getElementById('gradTo').value;
+        bg = `linear-gradient(to right, ${from}, ${to})`;
+        preview = null;
+      } else if (type === 'link') {
+        const url = document.getElementById('linkInput').value;
+        if (!url) return;
+        bg = `url('${url}')`;
+        preview = url;
+      }
+
+      document.body.style.background = bg;
+
+      // Save state
+      localStorage.setItem('bgType', type);
+      localStorage.setItem('currentIndex', index);
+      if (preview) localStorage.setItem('lastBgURL', preview);
+      localStorage.setItem('lastChange', Date.now());
+
+      // Update preview box
+      updatePreview(preview);
+    }
+
+    function updatePreview(src) {
+      const img = document.getElementById('previewImg');
+      if (src) {
+        img.src = src;
+      } else {
+        img.src = '';
+      }
+    }
+
+    function nextBackground() {
+      const type = localStorage.getItem('bgType') || 'unsplash';
+      const shuffle = localStorage.getItem('shuffleMode') || 'on';
+
+      let nextIndex = 0;
+      if (type === 'local') {
+        const len = localImages.length;
+        nextIndex = shuffle === 'on'
+          ? Math.floor(Math.random() * len)
+          : (currentIndex + 1) % len;
+      }
+
+      setBackground(type, nextIndex);
+    }
+
+    function applySettings() {
+      const type = document.getElementById('sourceSelect').value;
+      const shuffle = document.getElementById('shuffleSelect').value;
+      const mode = document.getElementById('timeSelect').value;
+
+      localStorage.setItem('bgMode', mode);
+      localStorage.setItem('shuffleMode', shuffle);
+      localStorage.setItem('bgType', type);
+
+      // Immediately set a background (or next)
+      nextBackground();
+      setupInterval();
+    }
+
+    function setupInterval() {
+      const mode = localStorage.getItem('bgMode') || 'refresh';
+      const interval = getIntervalMs(mode);
+
+      if (interval > 0) {
+        setInterval(() => {
+          nextBackground();
+        }, interval);
+      }
+    }
+
+    function loadInitialBackground() {
+      const type = localStorage.getItem('bgType') || 'unsplash';
+      const lastChange = Number(localStorage.getItem('lastChange') || 0);
+      const mode = localStorage.getItem('bgMode') || 'refresh';
+      const interval = getIntervalMs(mode);
+
+      let index = Number(localStorage.getItem('currentIndex') || 0);
+
+      if (mode === 'refresh' || (Date.now() - lastChange) >= interval) {
+        nextBackground();
+      } else {
+        // Use the last background URL (if unsplash) or index
+        if (type === 'unsplash') {
+          const url = localStorage.getItem('lastBgURL') || getUnsplashRandomUrl();
+          document.body.style.background = `url('${url}')`;
+          updatePreview(url);
+        } else if (type === 'local' && localImages[index]) {
+          document.body.style.background = `url('${localImages[index]}')`;
+          updatePreview(localImages[index]);
+        } else {
+          // For solid / gradient / link, just reapply
+          setBackground(type, index);
+        }
+      }
+
+      setupInterval();
+    }
+
+    // Keyboard shortcuts: left / right / S
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') nextBackground();
+      if (e.key === 'ArrowLeft') {
+        // For local: go to prev background
+        const type = localStorage.getItem('bgType') || 'unsplash';
+        if (type === 'local') {
+          const len = localImages.length;
+          const shuffle = localStorage.getItem('shuffleMode') || 'on';
+          let prevIndex;
+          if (shuffle === 'on') {
+            prevIndex = Math.floor(Math.random() * len);
+          } else {
+            prevIndex = (currentIndex - 1 + len) % len;
+          }
+          setBackground(type, prevIndex);
+        } else {
+          nextBackground(); // other types: just go next
+        }
+      }
+      if (e.key.toLowerCase() === 's') {
+        const shuffle = localStorage.getItem('shuffleMode') || 'on';
+        localStorage.setItem('shuffleMode', shuffle === 'on' ? 'off' : 'on');
+        alert('Shuffle: ' + (shuffle === 'on' ? 'OFF' : 'ON'));
+      }
+    });
+
+    // ----- PWA / Service Worker -----
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(() => {
+        console.log('SW registered');
+      });
+    }
+
+    // ----- Init -----
+    onSourceChange();
+    loadInitialBackground();
+  </script>
+</body>
+</html>

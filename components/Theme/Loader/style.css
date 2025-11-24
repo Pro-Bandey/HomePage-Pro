@@ -1,0 +1,259 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box
+}
+
+body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh
+}
+
+.loader-page {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    transition: opacity 6s, visibility 5s
+}
+
+.loader-hidden {
+    opacity: 0;
+    visibility: hidden
+}
+
+/* 10 loader styles */
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid #ddd;
+    border-top: 6px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite
+}
+
+.dots {
+    display: flex;
+    gap: 10px
+}
+
+.dots div {
+    width: 12px;
+    height: 12px;
+    background: #3498db;
+    border-radius: 50%;
+    animation: jump .6s infinite alternate
+}
+
+.dots div:nth-child(2) {
+    animation-delay: .2s
+}
+
+.dots div:nth-child(3) {
+    animation-delay: .4s
+}
+
+.pulse {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #3498db;
+    animation: pulse 1s infinite
+}
+
+.bars {
+    display: flex;
+    gap: 6px
+}
+
+.bars div {
+    width: 8px;
+    height: 40px;
+    background: #e74c3c;
+    animation: bar 1s infinite
+}
+
+.bars div:nth-child(2) {
+    animation-delay: .2s
+}
+
+.bars div:nth-child(3) {
+    animation-delay: .4s
+}
+
+.bars div:nth-child(4) {
+    animation-delay: .6s
+}
+
+.square {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #8e44ad;
+    animation: sq 1.2s infinite
+}
+
+.orbit {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 5px solid #3498db;
+    border-bottom-color: transparent;
+    animation: spin 1s linear infinite
+}
+
+.bounce {
+    width: 30px;
+    height: 30px;
+    background: #e74c3c;
+    border-radius: 50%;
+    animation: bounce 1s infinite
+}
+
+.wave {
+    display: flex;
+    gap: 5px
+}
+
+.wave div {
+    width: 8px;
+    height: 40px;
+    background: #2ecc71;
+    animation: wave 1s infinite;
+    display: inline-block
+}
+
+.wave div:nth-child(2) {
+    animation-delay: .2s
+}
+
+.wave div:nth-child(3) {
+    animation-delay: .4s
+}
+
+.wave div:nth-child(4) {
+    animation-delay: .6s
+}
+
+.wave div:nth-child(5) {
+    animation-delay: .8s
+}
+
+.morph {
+    width: 50px;
+    height: 50px;
+    background: #9b59b6;
+    border-radius: 50%;
+    animation: morph 1s infinite
+}
+
+.double-spinner {
+    width: 50px;
+    height: 50px;
+    border: 6px solid #3498db;
+    border-top: 6px solid #e74c3c;
+    border-radius: 50%;
+    animation: spin 1s linear infinite
+}
+
+.triple-spinner {
+    width: 50px;
+    height: 50px;
+    border: 6px solid #2ecc71;
+    border-top: 6px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite
+}
+
+/* Animations */
+@keyframes spin {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes jump {
+    to {
+        transform: translateY(-10px)
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(.6);
+        opacity: .4
+    }
+
+    100% {
+        transform: scale(1.3);
+        opacity: 1
+    }
+}
+
+@keyframes bar {
+
+    0%,
+    100% {
+        height: 20px
+    }
+
+    50% {
+        height: 60px
+    }
+}
+
+@keyframes sq {
+    0% {
+        transform: rotate(0)
+    }
+
+    50% {
+        transform: rotate(180deg)
+    }
+
+    100% {
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0)
+    }
+
+    50% {
+        transform: translateY(-30px)
+    }
+}
+
+@keyframes wave {
+
+    0%,
+    100% {
+        transform: scaleY(.3)
+    }
+
+    50% {
+        transform: scaleY(1)
+    }
+}
+
+@keyframes morph {
+
+    0%,
+    100% {
+        border-radius: 50%
+    }
+
+    50% {
+        border-radius: 0
+    }
+}

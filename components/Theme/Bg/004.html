@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custom Background Changer</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+    margin: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background 0.6s ease-in-out;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+.control-box {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.5);
+    padding: 15px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    width: 300px;
+}
+select, input, button {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: none;
+    margin-top: 8px;
+    outline: none;
+}
+button { cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="control-box">
+    <label>Background Source:</label>
+    <select id="sourceSelect" onchange="changeSourceOption()">
+        <option value="online">Online Pre-provided</option>
+        <option value="local">User Local Images</option>
+        <option value="solid">Solid Color</option>
+        <option value="gradient">Gradient Color</option>
+        <option value="link">Via Link</option>
+    </select>
+
+    <div id="extraOptions" style="margin-top:8px;"></div>
+
+    <label>Change Every:</label>
+    <select id="timeSelect">
+        <option value="refresh">On Refresh</option>
+        <option value="5m">Every 5 Minutes</option>
+        <option value="10m">Every 10 Minutes</option>
+        <option value="15m">Every 15 Minutes</option>
+        <option value="30m">Every 30 Minutes</option>
+        <option value="1h">Every 1 Hour</option>
+        <option value="2h">Every 2 Hours</option>
+        <option value="daily">Daily</option>
+    </select>
+
+    <label>Shuffle:</label>
+    <select id="shuffleSelect">
+        <option value="on">ON</option>
+        <option value="off">OFF</option>
+    </select>
+
+    <button onclick="applySettings()">Apply</button>
+    <button onclick="nextBackground()">Next Background</button>
+</div>
+
+<script>
+// --- ONLINE wallpapers
+const onlineWallpapers = [
+    "https://picsum.photos/1920/1080?random=1",
+    "https://picsum.photos/1920/1080?random=2",
+    "https://picsum.photos/1920/1080?random=3",
+    "https://picsum.photos/1920/1080?random=4",
+    "https://picsum.photos/1920/1080?random=5"
+];
+
+let userLocalImages = JSON.parse(localStorage.getItem("userLocalImages") || "[]");
+let currentIndex = Number(localStorage.getItem("currentIndex")) || 0;
+
+function changeSourceOption(){
+    const source = document.getElementById("sourceSelect").value;
+    const extraDiv = document.getElementById("extraOptions");
+    extraDiv.innerHTML = "";
+    if(source==="link"){
+        extraDiv.innerHTML = '<input type="text" id="linkInput" placeholder="Enter image URL">';
+    } else if(source==="solid"){
+        extraDiv.innerHTML = '<input type="color" id="colorPicker" value="#ffffff">';
+    } else if(source==="gradient"){
+        extraDiv.innerHTML = 'From: <input type="color" id="gradFrom" value="#ff7e5f"><br>To: <input type="color" id="gradTo" value="#feb47b">';
+    } else if(source==="local"){
+        extraDiv.innerHTML = '<input type="file" id="localFiles" accept="image/*" multiple>';
+        document.getElementById("localFiles")?.addEventListener('change', handleLocalFiles);
+    }
+}
+
+function handleLocalFiles(e){
+    const files = Array.from(e.target.files);
+    userLocalImages = files.map(f => URL.createObjectURL(f));
+    localStorage.setItem("userLocalImages", JSON.stringify(userLocalImages));
+}
+
+function getArrayLength(bgType){
+    switch(bgType){
+        case "online": return onlineWallpapers.length;
+        case "local": return userLocalImages.length;
+        case "solid": return 1;
+        case "gradient": return 1;
+        case "link": return 1;
+        default: return 0;
+    }
+}
+
+function getRandomIndex(arrLength){ return Math.floor(Math.random()*arrLength); }
+function getNextIndex(arrLength, shuffle){ return shuffle==="on"? getRandomIndex(arrLength) : (currentIndex+1)%arrLength; }
+
+function setBackground(bgType, index){
+    currentIndex = index;
+    let bgValue;
+    switch(bgType){
+        case "online": bgValue=`url('${onlineWallpapers[index]}')`; break;
+        case "local": bgValue=`url('${userLocalImages[index]}')`; break;
+        case "solid": bgValue=document.getElementById("colorPicker")?.value || "#ffffff"; break;
+        case "gradient":
+            const from = document.getElementById("gradFrom")?.value || "#ff7e5f";
+            const to = document.getElementById("gradTo")?.value || "#feb47b";
+            bgValue=`linear-gradient(to right, ${from}, ${to})`;
+            break;
+        case "link": bgValue=document.getElementById("linkInput")?.value || ""; break;
+    }
+    document.body.style.background = bgValue;
+    localStorage.setItem("currentIndex", index);
+    localStorage.setItem("bgType", bgType);
+    if(bgType==="link") localStorage.setItem("customLink", bgValue);
+}
+
+function nextBackground(){
+    const bgType = localStorage.getItem("bgType") || "online";
+    const shuffle = localStorage.getItem("shuffleMode") || "on";
+    const len = getArrayLength(bgType);
+    setBackground(bgType,getNextIndex(len,shuffle));
+}
+
+function getIntervalMs(mode){
+    switch(mode){
+        case "5m": return 5*60*1000;
+        case "10m": return 10*60*1000;
+        case "15m": return 15*60*1000;
+        case "30m": return 30*60*1000;
+        case "1h": return 60*60*1000;
+        case "2h": return 2*60*60*1000;
+        case "daily": return 24*60*60*1000;
+        default: return 0;
+    }
+}
+
+function loadBackground(){
+    const bgType = localStorage.getItem("bgType") || "online";
+    const shuffle = localStorage.getItem("shuffleMode") || "on";
+    const lastChange = Number(localStorage.getItem("lastChange") || 0);
+    const interval = getIntervalMs(localStorage.getItem("bgMode") || "refresh");
+
+    changeSourceOption();
+
+    const len = getArrayLength(bgType);
+    if(interval===0 || Date.now()-lastChange>=interval){
+        setBackground(bgType,getNextIndex(len,shuffle));
+    } else {
+        let idx = Number(localStorage.getItem("currentIndex")) || 0;
+        setBackground(bgType,idx);
+    }
+
+    if(interval>0){
+        setInterval(()=>{ setBackground(bgType,getNextIndex(len,shuffle)); }, interval);
+    }
+}
+
+function applySettings(){
+    const bgType = document.getElementById("sourceSelect").value;
+    const shuffle = document.getElementById("shuffleSelect").value;
+    const mode = document.getElementById("timeSelect").value;
+
+    localStorage.setItem("bgMode", mode);
+    localStorage.setItem("shuffleMode", shuffle);
+    localStorage.setItem("bgType", bgType);
+    nextBackground();
+}
+
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
+loadBackground();
+</script>
+</body>
+</html>

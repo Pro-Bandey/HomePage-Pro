@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Button Effects</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
+    color: #fff;
+    text-align: center;
+    padding: 40px;
+}
+
+h1 { margin-bottom: 30px; }
+
+.btn-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+button {
+    padding: 15px 35px;
+    border: none;
+    font-size: 17px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+/* ---------------------------------------
+   1. GLOW BUTTON
+----------------------------------------- */
+.btn-glow {
+    background: #1c1c1c;
+    color: #0ff;
+    border: 2px solid #0ff;
+    box-shadow: 0 0 15px #0ff;
+}
+.btn-glow:hover {
+    box-shadow: 0 0 40px #0ff;
+}
+
+/* ---------------------------------------
+   2. SLIDE FILL
+----------------------------------------- */
+.btn-slide {
+    background: transparent;
+    color: #ff008c;
+    border: 2px solid #ff008c;
+}
+.btn-slide::before {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 100%;
+    background: #ff008c;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    transition: 0.4s;
+}
+.btn-slide:hover::before {
+    width: 100%;
+}
+
+/* ---------------------------------------
+   3. RIPPLE BUTTON
+----------------------------------------- */
+.btn-ripple {
+    background: #222;
+    color: #fff;
+    overflow: hidden;
+}
+.ripple-effect {
+    position: absolute;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+}
+@keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+}
+
+/* ---------------------------------------
+   4. 3D PRESS
+----------------------------------------- */
+.btn-3d {
+    background: #28a745;
+    color: #fff;
+    box-shadow: 0px 6px #1f7a33;
+}
+.btn-3d:active {
+    transform: translateY(4px);
+    box-shadow: 0px 2px #1f7a33;
+}
+
+/* ---------------------------------------
+   5. BORDER DRAW
+----------------------------------------- */
+.btn-border {
+    color: #00d9ff;
+    background: transparent;
+}
+.btn-border::before,
+.btn-border::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background: #00d9ff;
+    transition: 0.3s;
+}
+.btn-border::before { top: 0; left: 0; }
+.btn-border::after { bottom: 0; right: 0; }
+.btn-border:hover::before,
+.btn-border:hover::after {
+    width: 100%;
+}
+
+/* ---------------------------------------
+   6. ANIMATED GRADIENT
+----------------------------------------- */
+.btn-gradient {
+    color: #fff;
+    background: linear-gradient(45deg, #ff00c8, #6200ff, #00eaff);
+    background-size: 300%;
+    animation: gradientMove 4s infinite linear;
+}
+@keyframes gradientMove {
+    0% { background-position: 0%; }
+    50% { background-position: 100%; }
+    100% { background-position: 0%; }
+}
+
+/* ---------------------------------------
+   7. NEON PULSE BUTTON
+----------------------------------------- */
+.btn-neon {
+    color: #fff;
+    background: #111;
+    border: 2px solid #0f0;
+    box-shadow: 0 0 10px #0f0;
+    animation: neonpulse 1.4s infinite alternate;
+}
+@keyframes neonpulse {
+    from { box-shadow: 0 0 10px #0f0; }
+    to { box-shadow: 0 0 25px #0f0; }
+}
+
+/* ---------------------------------------
+   8. LIQUID BUBBLE BUTTON
+----------------------------------------- */
+.btn-liquid {
+    background: linear-gradient(45deg, #0099ff, #00ffaa);
+    color: #fff;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+.btn-liquid::after {
+    content: "";
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    background: rgba(255,255,255,0.2);
+    top: -50px;
+    left: -50px;
+    border-radius: 50%;
+    animation: liquid 3s infinite linear;
+}
+@keyframes liquid {
+    0% { transform: translate(0, 0); }
+    50% { transform: translate(50px, 50px); }
+    100% { transform: translate(0, 0); }
+}
+
+/* ---------------------------------------
+   9. MAGNETIC HOVER
+----------------------------------------- */
+.btn-magnetic {
+    background: #333;
+    color: white;
+    transition: transform 0.3s;
+}
+.btn-magnetic:hover {
+    transform: scale(1.1);
+}
+
+/* ---------------------------------------
+   10. TOGGLE SWITCH (SLIDER)
+----------------------------------------- */
+.toggle-container {
+    margin-top: 20px;
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 65px;
+    height: 34px;
+}
+.switch input { display: none; }
+.slider {
+    position: absolute;
+    cursor: pointer;
+    background: #555;
+    border-radius: 34px;
+    transition: 0.4s;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+.slider:before {
+    content: "";
+    position: absolute;
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background: #fff;
+    border-radius: 50%;
+    transition: 0.4s;
+}
+input:checked + .slider {
+    background: #00d900;
+}
+input:checked + .slider:before {
+    transform: translateX(30px);
+}
+
+/* ---------------------------------------
+   11. iOS TOGGLE
+----------------------------------------- */
+.ios-switch {
+    width: 60px;
+    height: 30px;
+    background: #666;
+    border-radius: 30px;
+    position: relative;
+    cursor: pointer;
+}
+.ios-switch .circle {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+.ios-switch.active {
+    background: #34c759;
+}
+.ios-switch.active .circle {
+    transform: translateX(28px);
+}
+</style>
+</head>
+
+<body>
+<h1>Advanced Button Effects + Toggles</h1>
+
+<div class="btn-container">
+    <button class="btn-glow">Glow</button>
+    <button class="btn-slide">Slide Fill</button>
+    <button class="btn-ripple">Ripple</button>
+    <button class="btn-3d">3D Press</button>
+    <button class="btn-border">Border Draw</button>
+    <button class="btn-gradient">Gradient</button>
+    <button class="btn-neon">Neon Pulse</button>
+    <button class="btn-liquid">Liquid Bubble</button>
+    <button class="btn-magnetic">Magnetic Hover</button>
+</div>
+
+<h2>Toggle Buttons</h2>
+
+<div class="toggle-container">
+    <!-- Slider Toggle -->
+    <label class="switch">
+        <input type="checkbox">
+        <span class="slider"></span>
+    </label>
+</div>
+
+<br>
+
+<!-- iOS Toggle -->
+<div class="ios-switch" id="iosToggle">
+    <div class="circle"></div>
+</div>
+
+<script>
+// Ripple Button JS
+document.querySelectorAll('.btn-ripple').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+        const circle = document.createElement("span");
+        circle.classList.add("ripple-effect");
+        const rect = btn.getBoundingClientRect();
+        circle.style.left = `${e.clientX - rect.left}px`;
+        circle.style.top = `${e.clientY - rect.top}px`;
+        btn.appendChild(circle);
+        setTimeout(() => circle.remove(), 600);
+    });
+});
+
+// iOS toggle JS
+document.getElementById("iosToggle").onclick = function () {
+    this.classList.toggle("active");
+};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customizable Clock</title>
+  <style>
+    /* Default Styles */
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .clock-container {
+      position: relative;
+      margin: 50px auto;
+      width: 300px;
+      height: 300px;
+    }
+
+    .analog-clock {
+      display: none;
+      width: 100%;
+      height: 100%;
+      border: 5px solid black;
+      border-radius: 50%;
+      background-color: white;
+      position: relative;
+    }
+
+    .hour, .minute, .second {
+      position: absolute;
+      width: 50%;
+      height: 3px;
+      background-color: black;
+      transform-origin: 100%;
+      left: 50%;
+    }
+
+    .hour { height: 6px; }
+    .minute { background-color: gray; }
+    .second { background-color: red; height: 2px; }
+
+    .center-point {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background-color: black;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .digital-clock {
+      font-size: 40px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .settings {
+      margin-top: 20px;
+    }
+
+    .settings button, .settings input {
+      margin: 5px;
+    }
+
+    .visible {
+      display: block;
+    }
+
+    /* User Custom Style Overrides */
+  </style>
+</head>
+<body>
+  <h1>Customizable Clock</h1>
+
+  <div class="clock-container">
+    <div class="analog-clock">
+      <div class="hour" id="hour-hand"></div>
+      <div class="minute" id="minute-hand"></div>
+      <div class="second" id="second-hand"></div>
+      <div class="center-point"></div>
+    </div>
+    <div class="digital-clock" id="digital-clock"></div>
+  </div>
+
+  <div class="settings">
+    <label>
+      <input type="checkbox" id="toggle-am-pm"> Show AM/PM
+    </label>
+    <label>
+      <input type="checkbox" id="toggle-date"> Show Date
+    </label>
+    <label>
+      <input type="checkbox" id="toggle-day"> Show Day
+    </label>
+    <br>
+    <label for="time-format">Time Format:</label>
+    <select id="time-format">
+      <option value="12">12 Hour</option>
+      <option value="24">24 Hour</option>
+    </select>
+    <br>
+    <button onclick="switchClock()">Switch Clock</button>
+    <button onclick="exportSettings()">Export Settings</button>
+    <button onclick="importSettings()">Import Settings</button>
+    <input type="file" id="import-file" style="display: none;">
+  </div>
+
+  <script>
+    const digitalClockEl = document.getElementById('digital-clock');
+    const analogClockEl = document.querySelector('.analog-clock');
+    const hourHand = document.getElementById('hour-hand');
+    const minuteHand = document.getElementById('minute-hand');
+    const secondHand = document.getElementById('second-hand');
+    const toggleAmPm = document.getElementById('toggle-am-pm');
+    const toggleDate = document.getElementById('toggle-date');
+    const toggleDay = document.getElementById('toggle-day');
+    const timeFormatSelect = document.getElementById('time-format');
+    let showAnalogClock = true;
+
+    function updateClock() {
+      const now = new Date();
+
+      // Analog Clock
+      const seconds = now.getSeconds();
+      const minutes = now.getMinutes();
+      const hours = now.getHours();
+      const hours12 = hours % 12 || 12;
+
+      hourHand.style.transform = `rotate(${(hours12 * 30) + (minutes / 2)}deg)`;
+      minuteHand.style.transform = `rotate(${minutes * 6}deg)`;
+      secondHand.style.transform = `rotate(${seconds * 6}deg)`;
+
+      // Digital Clock
+      const is12Hour = timeFormatSelect.value === '12';
+      const displayHours = is12Hour ? hours12 : hours.toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      let clockString = `${displayHours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      if (is12Hour && toggleAmPm.checked) clockString += ` ${ampm}`;
+      if (toggleDate.checked) clockString += ` | ${now.toLocaleDateString()}`;
+      if (toggleDay.checked) clockString += ` | ${now.toLocaleDateString('en-US', { weekday: 'long' })}`;
+      digitalClockEl.textContent = clockString;
+
+      requestAnimationFrame(updateClock);
+    }
+
+    function switchClock() {
+      showAnalogClock = !showAnalogClock;
+      analogClockEl.classList.toggle('visible', showAnalogClock);
+      digitalClockEl.classList.toggle('visible', !showAnalogClock);
+    }
+
+    function exportSettings() {
+      const settings = {
+        showAmPm: toggleAmPm.checked,
+        showDate: toggleDate.checked,
+        showDay: toggleDay.checked,
+        timeFormat: timeFormatSelect.value,
+      };
+      const blob = new Blob([JSON.stringify(settings)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'clock-settings.json';
+      a.click();
+    }
+
+    function importSettings() {
+      const fileInput = document.getElementById('import-file');
+      fileInput.click();
+      fileInput.onchange = () => {
+        const file = fileInput.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const settings = JSON.parse(reader.result);
+            toggleAmPm.checked = settings.showAmPm;
+            toggleDate.checked = settings.showDate;
+            toggleDay.checked = settings.showDay;
+            timeFormatSelect.value = settings.timeFormat;
+          };
+          reader.readAsText(file);
+        }
+      };
+    }
+
+    switchClock(); // Initialize clock visibility
+    updateClock(); // Start updating the clock
+  </script>
+</body>
+</html>
