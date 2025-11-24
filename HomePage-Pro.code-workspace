@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../HomePage"
+		},
+		{
+			"path": "../Home Page Legacy"
+		},
+		{
+			"path": "../Demo"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "Demo",
+		"chat.sendElementsToChat.attachCSS": false,
+		"chat.sendElementsToChat.attachImages": false,
+		"chat.sendElementsToChat.enabled": false,
+		"chat.agent.enabled": false
+	}
+}
